@@ -1393,3 +1393,34 @@ typedef struct {
 Macro macros[MAX_MACROS];
 int macro_count = 0;
 
+void load_macros_from_r4meta(const char* meta_file) {
+    FILE* file = fopen(meta_file, "r");
+    if (!file) {
+        perror("Failed to open r4meta file");
+        return;
+    }
+
+    fseek(file, 0, SEEK_END);
+    long size = ftell(file);
+    rewind(file);
+
+    char* buffer = malloc(size + 1);
+    fread(buffer, 1, size, file);
+    buffer[size] = '\0';
+    fclose(file);
+
+    struct json_object* root = json_tokener_parse(buffer);
+    struct json_object* macro_obj;
+
+    if (json_object_object_get_ex(root, "macros", &macro_obj)) {
+        int len = json_object_array_length(macro_obj);
+        for (int i = 0; i < len && i < MAX_MACROS; i++) {
+            struct json_object* item = json_object_array_get_idx(macro_obj, i);
+            strcpy(macros[i].name, json_object_get_string(json_object_object_get(item, "name")));
+            strcpy(macros[i].expansion, json_object_get_string(json_object_object_get(item, "expansion")));
+            macro_count++;
+        }
+    }
+    free(buffer);
+}
+

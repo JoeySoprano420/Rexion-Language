@@ -1424,3 +1424,5 @@ void load_macros_from_r4meta(const char* meta_file) {
     free(buffer);
 }
 
+load_macros_from_r4meta("official/macros.r4meta");
+

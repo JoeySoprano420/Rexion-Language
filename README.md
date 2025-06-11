@@ -128,10 +128,10 @@ greet "Violet"
 ---
 
 
-CREATE THIS AS A BRAND NEW PROGRAMMING/COMPUTER LANGUAGE FROM SCRATCH:
+
 
 Rexion is a programming language
-It uses a UNIVERSAL EXECUTABLE-INSTRUCTION (UEI) ruleset, C grammar, Python semantics, dynamic C syntax with minimal symbols, specified explicit structure, static AOT COMPILATION, JIT execution, on the fly optimizations (real-time), live deep-logic error handling, deep intrinsic memory handling, indents are optional, punctuation is based on simplistic yet powerful NASM and very high-level English, final output is machine code, and ir code is serialized mapping table with direct intrinsic abstraction-based context-aware inference-heavy references, the AST uses flow-chart NASM->hexadecimal.
+that uses a UNIVERSAL EXECUTABLE-INSTRUCTION (UEI) ruleset, C grammar, Python semantics, dynamic C syntax with minimal symbols, specified explicit structure, static AOT COMPILATION, JIT execution, on the fly optimizations (real-time), live deep-logic error handling, deep intrinsic memory handling, indents are optional, punctuation is based on simplistic yet powerful NASM and very high-level English, final output is machine code, and ir code is serialized mapping table with direct intrinsic abstraction-based context-aware inference-heavy references, the AST uses flow-chart NASM->hexadecimal.
 
 Create a rule update requiring Define through declarations
 

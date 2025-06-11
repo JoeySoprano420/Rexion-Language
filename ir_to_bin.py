@@ -1364,3 +1364,491 @@ def test_ir_control_flow_patch_extended_fixed():
     print("✅ Fixed full backend roundtrip test passed with extended IR support.")
 
 test_ir_control_flow_patch_extended_fixed()
+
+# Let's create a function to dump .asm annotated version from bytecode
+
+def dump_annotated_asm(bytecode, filename="rexion_dump.asm"):
+    asm_lines = []
+    pc = 0
+    while pc < len(bytecode):
+        opcode = bytecode[pc]
+        instr_name = EXTENDED_INSTR_REV.get(opcode, f"UNKNOWN_{opcode}")
+        line = f"{pc:04X}: {instr_name}"
+        args = []
+        # Estimate arg count (naive logic — can improve with formal instruction set metadata)
+        if instr_name in {"MOV", "ADD", "SUB", "MUL", "DIV"}:
+            args = bytecode[pc+1:pc+4]
+            pc += 4
+        elif instr_name in {"IF", "WHILE"}:
+            args = bytecode[pc+1:pc+3]
+            pc += 3
+        elif instr_name in {"ELSE"}:
+            args = bytecode[pc+1:pc+2]
+            pc += 2
+        elif instr_name in {"PRINT"}:
+            args = bytecode[pc+1:pc+2]
+            pc += 2
+        else:
+            pc += 1
+        if args:
+            line += " " + ", ".join(str(a) for a in args)
+        asm_lines.append(line)
+
+    asm_path = "/mnt/data/" + filename
+    with open(asm_path, "w") as f:
+        f.write("\n".join(asm_lines))
+    return asm_path
+
+# Generate the .asm dump
+asm_file = dump_annotated_asm(
+    rex_ir_to_bytecode_fixed([
+        "[DECLARE] a = 2",
+        "[IF] a > 0",
+        "[PRINT] -> a",
+        "[ELSE]",
+        "[PRINT] -> 0",
+        "[END_WHILE]",
+        "[FUNC_END]",
+        "[STR]",
+        "[STRUCT]",
+        "[ENUM]",
+        "[EVENT]",
+        "[ASYNC]",
+        "[AWAIT]"
+    ])
+)
+
+asm_file
+
+# Define reverse lookup for instruction names from opcodes
+EXTENDED_INSTR_REV = {v: k for k, v in EXTENDED_INSTR.items()}
+
+# Retry the annotated .asm dump
+asm_file = dump_annotated_asm(
+    rex_ir_to_bytecode_fixed([
+        "[DECLARE] a = 2",
+        "[IF] a > 0",
+        "[PRINT] -> a",
+        "[ELSE]",
+        "[PRINT] -> 0",
+        "[END_WHILE]",
+        "[FUNC_END]",
+        "[STR]",
+        "[STRUCT]",
+        "[ENUM]",
+        "[EVENT]",
+        "[ASYNC]",
+        "[AWAIT]"
+    ])
+)
+
+asm_file
+
+# 🔍 Enhanced dump with inline comments for variable interpretation
+# 🧪 Add hash digest to cross-verify .asm vs .bin
+# 🖥️ Build basic interactive debugger
+
+import hashlib
+
+# Fake register context for demo purpose
+REGISTER_NAMES = {
+    0: 'R0', 1: 'R1', 2: 'R2', 3: 'R3',
+    4: 'R4', 5: 'R5', 6: 'R6', 7: 'R7'
+}
+
+def hash_digest(data):
+    return hashlib.sha256(bytes(data)).hexdigest()
+
+def dump_annotated_asm_with_comments(bytecode, filename="rexion_dump_commented.asm"):
+    asm_lines = []
+    pc = 0
+    while pc < len(bytecode):
+        opcode = bytecode[pc]
+        instr_name = EXTENDED_INSTR_REV.get(opcode, f"UNKNOWN_{opcode}")
+        line = f"{pc:04X}: {instr_name}"
+        comment = ""
+        args = []
+
+        # Infer argument count and annotate
+        if instr_name == "MOV":
+            dst = bytecode[pc + 1]
+            val = bytecode[pc + 2]
+            args = [dst, val]
+            comment = f"; {REGISTER_NAMES.get(dst, 'R?')} ← {val}"
+            pc += 3
+        elif instr_name in {"ADD", "SUB", "MUL", "DIV"}:
+            dst, src1, src2 = bytecode[pc+1:pc+4]
+            args = [dst, src1, src2]
+            comment = f"; {REGISTER_NAMES.get(dst)} ← {REGISTER_NAMES.get(src1)} {instr_name} {REGISTER_NAMES.get(src2)}"
+            pc += 4
+        elif instr_name == "PRINT":
+            reg = bytecode[pc + 1]
+            args = [reg]
+            comment = f"; print {REGISTER_NAMES.get(reg)}"
+            pc += 2
+        elif instr_name in {"IF", "WHILE"}:
+            cond1, cond2 = bytecode[pc+1:pc+3]
+            args = [cond1, cond2]
+            comment = f"; branch if {REGISTER_NAMES.get(cond1)} > {REGISTER_NAMES.get(cond2)}"
+            pc += 3
+        elif instr_name == "ELSE":
+            jump = bytecode[pc+1]
+            args = [jump]
+            comment = "; jump to end of IF"
+            pc += 2
+        else:
+            pc += 1
+
+        if args:
+            line += " " + ", ".join(str(a) for a in args)
+        line += " " + comment
+        asm_lines.append(line)
+
+    # Save to file
+    asm_path = "/mnt/data/" + filename
+    with open(asm_path, "w") as f:
+        f.write("\n".join(asm_lines))
+    return asm_path
+
+# Build interactive debugger core
+class InteractiveDebugger:
+    def __init__(self, bytecode):
+        self.code = bytecode
+        self.pc = 0
+        self.registers = [0] * 8
+
+    def step(self):
+        if self.pc >= len(self.code):
+            print("🛑 End of program.")
+            return False
+        instr = self.code[self.pc]
+        instr_name = EXTENDED_INSTR_REV.get(instr, f"UNKNOWN_{instr}")
+        print(f"{self.pc:04X}: Executing {instr_name}")
+
+        if instr_name == "MOV":
+            reg = self.code[self.pc + 1]
+            val = self.code[self.pc + 2]
+            self.registers[reg] = val
+            print(f"→ {REGISTER_NAMES[reg]} ← {val}")
+            self.pc += 3
+        elif instr_name == "PRINT":
+            reg = self.code[self.pc + 1]
+            print(f"[PRINT] {REGISTER_NAMES[reg]} = {self.registers[reg]}")
+            self.pc += 2
+        elif instr_name in {"ADD", "SUB", "MUL", "DIV"}:
+            dst, src1, src2 = self.code[self.pc + 1: self.pc + 4]
+            if instr_name == "ADD":
+                self.registers[dst] = self.registers[src1] + self.registers[src2]
+            elif instr_name == "SUB":
+                self.registers[dst] = self.registers[src1] - self.registers[src2]
+            elif instr_name == "MUL":
+                self.registers[dst] = self.registers[src1] * self.registers[src2]
+            elif instr_name == "DIV":
+                self.registers[dst] = self.registers[src1] // self.registers[src2]
+            print(f"→ {REGISTER_NAMES[dst]} updated to {self.registers[dst]}")
+            self.pc += 4
+        else:
+            print(f"→ Instruction {instr_name} not yet handled")
+            self.pc += 1
+        return True
+
+    def run(self):
+        while self.step():
+            input("⏩ Press Enter to step...")
+
+# Generate bytecode and dump .asm
+test_ir_input = [
+    "[DECLARE] a = 2",
+    "[IF] a > 0",
+    "[PRINT] -> a",
+    "[ELSE]",
+    "[PRINT] -> 0",
+    "[END_WHILE]",
+    "[FUNC_END]",
+    "[STR]",
+    "[STRUCT]",
+    "[ENUM]",
+    "[EVENT]",
+    "[ASYNC]",
+    "[AWAIT]"
+]
+final_bytecode = rex_ir_to_bytecode_fixed(test_ir_input)
+asm_annotated_path = dump_annotated_asm_with_comments(final_bytecode)
+
+# Check integrity hash for .bin vs .asm generation
+bytecode_hash = hash_digest(final_bytecode)
+
+(asm_annotated_path, bytecode_hash)
+
+# 🔍 Enhanced dump with inline comments for variable interpretation
+# 🧪 Add hash digest to cross-verify .asm vs .bin
+# 🖥️ Build basic interactive debugger
+
+import hashlib
+
+# Fake register context for demo purpose
+REGISTER_NAMES = {
+    0: 'R0', 1: 'R1', 2: 'R2', 3: 'R3',
+    4: 'R4', 5: 'R5', 6: 'R6', 7: 'R7'
+}
+
+def hash_digest(data):
+    return hashlib.sha256(bytes(data)).hexdigest()
+
+def dump_annotated_asm_with_comments(bytecode, filename="rexion_dump_commented.asm"):
+    asm_lines = []
+    pc = 0
+    while pc < len(bytecode):
+        opcode = bytecode[pc]
+        instr_name = EXTENDED_INSTR_REV.get(opcode, f"UNKNOWN_{opcode}")
+        line = f"{pc:04X}: {instr_name}"
+        comment = ""
+        args = []
+
+        # Infer argument count and annotate
+        if instr_name == "MOV":
+            dst = bytecode[pc + 1]
+            val = bytecode[pc + 2]
+            args = [dst, val]
+            comment = f"; {REGISTER_NAMES.get(dst, 'R?')} ← {val}"
+            pc += 3
+        elif instr_name in {"ADD", "SUB", "MUL", "DIV"}:
+            dst, src1, src2 = bytecode[pc+1:pc+4]
+            args = [dst, src1, src2]
+            comment = f"; {REGISTER_NAMES.get(dst)} ← {REGISTER_NAMES.get(src1)} {instr_name} {REGISTER_NAMES.get(src2)}"
+            pc += 4
+        elif instr_name == "PRINT":
+            reg = bytecode[pc + 1]
+            args = [reg]
+            comment = f"; print {REGISTER_NAMES.get(reg)}"
+            pc += 2
+        elif instr_name in {"IF", "WHILE"}:
+            cond1, cond2 = bytecode[pc+1:pc+3]
+            args = [cond1, cond2]
+            comment = f"; branch if {REGISTER_NAMES.get(cond1)} > {REGISTER_NAMES.get(cond2)}"
+            pc += 3
+        elif instr_name == "ELSE":
+            jump = bytecode[pc+1]
+            args = [jump]
+            comment = "; jump to end of IF"
+            pc += 2
+        else:
+            pc += 1
+
+        if args:
+            line += " " + ", ".join(str(a) for a in args)
+        line += " " + comment
+        asm_lines.append(line)
+
+    # Save to file
+    asm_path = "/mnt/data/" + filename
+    with open(asm_path, "w") as f:
+        f.write("\n".join(asm_lines))
+    return asm_path
+
+# Build interactive debugger core
+class InteractiveDebugger:
+    def __init__(self, bytecode):
+        self.code = bytecode
+        self.pc = 0
+        self.registers = [0] * 8
+
+    def step(self):
+        if self.pc >= len(self.code):
+            print("🛑 End of program.")
+            return False
+        instr = self.code[self.pc]
+        instr_name = EXTENDED_INSTR_REV.get(instr, f"UNKNOWN_{instr}")
+        print(f"{self.pc:04X}: Executing {instr_name}")
+
+        if instr_name == "MOV":
+            reg = self.code[self.pc + 1]
+            val = self.code[self.pc + 2]
+            self.registers[reg] = val
+            print(f"→ {REGISTER_NAMES[reg]} ← {val}")
+            self.pc += 3
+        elif instr_name == "PRINT":
+            reg = self.code[self.pc + 1]
+            print(f"[PRINT] {REGISTER_NAMES[reg]} = {self.registers[reg]}")
+            self.pc += 2
+        elif instr_name in {"ADD", "SUB", "MUL", "DIV"}:
+            dst, src1, src2 = self.code[self.pc + 1: self.pc + 4]
+            if instr_name == "ADD":
+                self.registers[dst] = self.registers[src1] + self.registers[src2]
+            elif instr_name == "SUB":
+                self.registers[dst] = self.registers[src1] - self.registers[src2]
+            elif instr_name == "MUL":
+                self.registers[dst] = self.registers[src1] * self.registers[src2]
+            elif instr_name == "DIV":
+                self.registers[dst] = self.registers[src1] // self.registers[src2]
+            print(f"→ {REGISTER_NAMES[dst]} updated to {self.registers[dst]}")
+            self.pc += 4
+        else:
+            print(f"→ Instruction {instr_name} not yet handled")
+            self.pc += 1
+        return True
+
+    def run(self):
+        while self.step():
+            input("⏩ Press Enter to step...")
+
+# Generate bytecode and dump .asm
+test_ir_input = [
+    "[DECLARE] a = 2",
+    "[IF] a > 0",
+    "[PRINT] -> a",
+    "[ELSE]",
+    "[PRINT] -> 0",
+    "[END_WHILE]",
+    "[FUNC_END]",
+    "[STR]",
+    "[STRUCT]",
+    "[ENUM]",
+    "[EVENT]",
+    "[ASYNC]",
+    "[AWAIT]"
+]
+final_bytecode = rex_ir_to_bytecode_fixed(test_ir_input)
+asm_annotated_path = dump_annotated_asm_with_comments(final_bytecode)
+
+# Check integrity hash for .bin vs .asm generation
+bytecode_hash = hash_digest(final_bytecode)
+
+(asm_annotated_path, bytecode_hash)
+
+from collections import defaultdict
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+
+class ExecutableVM:
+    def __init__(self, bytecode):
+        self.bytecode = bytecode
+        self.pc = 0
+        self.registers = [0] * 8
+        self.heap = defaultdict(int)
+        self.stack = []
+        self.history = []
+
+    def visualize_memory(self):
+        fig, ax = plt.subplots(figsize=(10, 5))
+        reg_labels = [f'R{i}' for i in range(8)]
+        reg_values = self.registers
+        reg_colors = ['tab:blue'] * 8
+
+        ax.bar(reg_labels, reg_values, color=reg_colors)
+        ax.set_title('Register States')
+        ax.set_ylabel('Value')
+        plt.grid(axis='y')
+        plt.tight_layout()
+        plt.show()
+
+    def visualize_heap(self):
+        fig, ax = plt.subplots(figsize=(12, 3))
+        items = sorted(self.heap.items())
+        keys = [f"H[{k}]" for k, _ in items]
+        values = [v for _, v in items]
+        ax.bar(keys, values, color='tab:green')
+        ax.set_title('Heap Memory Contents')
+        ax.set_ylabel('Value')
+        plt.xticks(rotation=45)
+        plt.grid(axis='y')
+        plt.tight_layout()
+        plt.show()
+
+    def step(self):
+        if self.pc >= len(self.bytecode):
+            print("🛑 End of program.")
+            return False
+
+        instr = self.bytecode[self.pc]
+        instr_name = EXTENDED_INSTR_REV.get(instr, f"UNKNOWN_{instr}")
+        print(f"{self.pc:04X}: Executing {instr_name}")
+        self.history.append((self.pc, instr_name, list(self.registers)))
+
+        if instr_name == "MOV":
+            reg = self.bytecode[self.pc + 1]
+            val = self.bytecode[self.pc + 2]
+            self.registers[reg] = val
+            self.pc += 3
+        elif instr_name == "PRINT":
+            reg = self.bytecode[self.pc + 1]
+            print(f"[PRINT] {REGISTER_NAMES.get(reg)} = {self.registers[reg]}")
+            self.pc += 2
+        elif instr_name in {"ADD", "SUB", "MUL", "DIV"}:
+            dst, src1, src2 = self.bytecode[self.pc + 1: self.pc + 4]
+            if instr_name == "ADD":
+                self.registers[dst] = self.registers[src1] + self.registers[src2]
+            elif instr_name == "SUB":
+                self.registers[dst] = self.registers[src1] - self.registers[src2]
+            elif instr_name == "MUL":
+                self.registers[dst] = self.registers[src1] * self.registers[src2]
+            elif instr_name == "DIV":
+                self.registers[dst] = self.registers[src1] // self.registers[src2]
+            self.pc += 4
+        elif instr_name == "HEAP_SET":
+            addr = self.bytecode[self.pc + 1]
+            val = self.bytecode[self.pc + 2]
+            self.heap[addr] = val
+            self.pc += 3
+        elif instr_name == "HEAP_GET":
+            dst = self.bytecode[self.pc + 1]
+            addr = self.bytecode[self.pc + 2]
+            self.registers[dst] = self.heap[addr]
+            self.pc += 3
+        elif instr_name == "ASYNC":
+            print("🚧 Async stub (executes immediately in this VM)")
+            self.pc += 1
+        elif instr_name == "AWAIT":
+            print("⏳ Await resolved immediately")
+            self.pc += 1
+        else:
+            print(f"→ Instruction {instr_name} not yet handled")
+            self.pc += 1
+        return True
+
+    def run(self):
+        while self.step():
+            self.visualize_memory()
+            self.visualize_heap()
+            input("⏩ Press Enter to step...")
+
+# Load the final bytecode into real execution context
+vm = ExecutableVM(final_bytecode)
+vm.run()
+
+import time
+import json
+
+class AutoStepVM(ExecutableVM):
+    def run(self, delay=1.0, steps=None):
+        step_count = 0
+        while self.pc < len(self.bytecode):
+            step_result = self.step()
+            if not step_result:
+                break
+            self.visualize_memory()
+            self.visualize_heap()
+            time.sleep(delay)
+            step_count += 1
+            if steps and step_count >= steps:
+                break
+
+# Run auto-step VM for limited steps with short delay
+auto_vm = AutoStepVM(final_bytecode)
+auto_vm.run(delay=0.75, steps=12)
+
+# Save full execution log
+vm_log_path = "/mnt/data/vmrunlog.json"
+heap_trace_path = "/mnt/data/vm_heap_trace.json"
+mem_trace_path = "/mnt/data/vm_mem_trace.json"
+
+with open(vm_log_path, "w") as f:
+    json.dump(auto_vm.history, f, indent=2)
+
+with open(heap_trace_path, "w") as f:
+    json.dump(dict(auto_vm.heap), f, indent=2)
+
+with open(mem_trace_path, "w") as f:
+    json.dump({f"R{i}": val for i, val in enumerate(auto_vm.registers)}, f, indent=2)
+
+vm_log_path, heap_trace_path, mem_trace_path

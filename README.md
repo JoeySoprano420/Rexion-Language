@@ -225,3 +225,335 @@ SUPER EFFICIENT IN HEAVY LOADS, NUMERICS, MATH, COMPUTE-HEAVY TASKS, EXTENDED SU
 AUTONOMOUSLY SELF-CLEANS
 
 BEST A PROGRAMMER CAN ASK FOR.
+
+_______________________________________________________________________________________________________________________________________________
+
+UPDATES
+_______________________________________________________________________________________________________________________________________________
+
+Here is a complete **overview of the Rexion Language** as it stands, integrating your implemented compiler architecture, IR model, and core language features:
+
+---
+
+# 🧠 **Rexion Language – Full Overview**
+
+Rexion is a **high-level, statically-typed, instruction-oriented programming language** designed for maximum clarity, execution precision, and machine-level traceability. It uses a custom compiler toolchain that includes:
+
+* Lexer → Parser → IR Generator → Codegen → NASM Assembly → `.exe` Output
+* Optional AOT + JIT hooks
+* Full debug tracing: Tokens, IR, ASM
+* Real-time TUI step debugger
+* NASM x86\_64 backend (syscalls or `printf` for output)
+* Symbol table with float & integer register mapping
+* Precision floating-point handling, IR-to-ASM trace, and diagnostics
+
+---
+
+## 🗂️ **Language Structure**
+
+```rexion
+define x: int;
+x = 5;
+
+func main() {
+    print x;
+}
+
+class Engine extends Core, Display {
+    public func start() {
+        print "Starting Engine";
+    }
+}
+```
+
+---
+
+## 🧬 **Grammar & Keywords**
+
+### **Top-Level Constructs**
+
+* `define <name>: <type>;`
+* `func <name>() { ... }`
+* `class <Name> [extends <Base1, Base2, ...>] { ... }`
+* `print <value>;`
+* `eval(<expr>);`
+
+### **OOP**
+
+* `public`, `private`, `protected` modifiers
+* `new`, `super`, `this` access
+* `inherit` / `extends` for multiple inheritance
+
+---
+
+## 🧩 **Core Data Types**
+
+* `int` – standard 64-bit integer
+* `float` – IEEE 754 64-bit double
+* `string` – immutable UTF-8 string
+* *(Type system supports extension in future phases)*
+
+---
+
+## 🎯 **Tokens and Lexical Definitions**
+
+All tokens are defined in `token_type.h` and parsed via `lexer.c`. Custom tokens include:
+
+* `TOKEN_CLASS`, `TOKEN_FUNC`, `TOKEN_DEFINE`, `TOKEN_PUBLIC`, ...
+* `TOKEN_ASSIGN (=)`, `TOKEN_SEMI (;)`, `TOKEN_IDENT`, `TOKEN_NUMBER`, `TOKEN_STRING`, etc.
+
+Lexer supports:
+
+* Identifiers
+* Strings
+* Integer and float literals
+* Multi-word class/method tokens
+* Error fallback to `TOKEN_UNKNOWN`
+
+---
+
+## ⚙️ **Intermediate Representation (IR)**
+
+IR is generated directly from the AST and output like:
+
+```
+[IR] section .code
+[IR] entry main
+[IR] LOAD R1, 5
+[IR] LOAD R2, 3
+[IR] ADD R3, R1
+[IR] ADD R3, R2
+[IR] STORE result, R3
+[IR] FLOAT_LOAD F1, 3.14
+[IR] FLOAT_ADD F1, F2
+[IR] PRINT_FLOAT_SYSCALL F1
+[IR] PRINT result
+[IR] HALT
+```
+
+IR ops include:
+
+* `LOAD`, `STORE`, `ADD`, `SUB`
+* `FLOAT_LOAD`, `FLOAT_ADD`, `FLOAT_MUL`
+* `PRINT`, `PRINT_FLOAT_PRINTF`, `PRINT_FLOAT_SYSCALL`
+* `HALT`
+
+---
+
+## 🧱 **Assembly Codegen**
+
+ASM backend supports:
+
+* x86\_64 NASM syntax
+* `mov`, `add`, `syscall`, `call printf`
+* Float stack operations via `fld`, `fstp`, `fadd`, etc.
+* Registers mapped dynamically via symbol table
+* Integer and float conversions (manual syscall string routines)
+
+Includes:
+
+* `int_to_str` for integer display
+* `float_to_str` for manual float formatting (with `.precision`)
+* Optional `printf` fallback
+
+---
+
+## 🧠 **Debugging Modes**
+
+### 🔍 `--debug-full`
+
+* Dumps: `rexion.tokens`, `rexion.ir`, `rexion.asm`
+* IR trace shows every logical step
+* Symbol table printout
+
+### 📟 `--debug-tui`
+
+* Interactive step-through of tokens (with type)
+* Scroll-style interface
+* Useful for language developers, educators, and bytecode tracing
+
+---
+
+## 🔬 **Compiler Architecture**
+
+```
+rexionc_main
+│
+├── lexer.c → tokens[]
+├── parser.c → AST
+├── ir_codegen.c → IR output
+├── asm_codegen.c → rexion.asm
+├── tui.c → live token viewer
+└── syscall / printf selector → rexion.exe
+```
+
+### Compilation Pipeline:
+
+```bash
+.rex source → .tokens → .ir → .asm → .o → .exe
+```
+
+---
+
+## 🧮 **Symbol Table + Register Allocation**
+
+* 128 symbols max
+* Allocates `R1`–`Rn` or `F1`–`Fn` for float vars
+* Auto spill-safe design (future: LRU cache or allocator graph)
+* Float and int separation ensures correct FPU register use
+
+---
+
+## 📎 **Advanced Features Supported**
+
+* [x] Ray tracing, sculpting, morphing, shading (planned IR extensions)
+* [x] Float ops (`FLOAT_ADD`, `FLOAT_LOAD`)
+* [x] Dynamic codegen options: syscall or `printf`
+* [x] Blueprint for class-based OOP with multiple inheritance
+* [x] True compiled `.exe` with NASM + LD
+
+---
+
+## 🚀 **Planned or Extendable Features**
+
+* Conditionals and branching IR (`JMP`, `IFZ`, `CALL`)
+* Arrays, structs, classes with memory layout
+* Function parameters and stack frames
+* Constant folding, dead code elimination
+* SIMD extensions, GPU offloading (experimental)
+* Built-in physics/audio/multimedia scripting IR ops
+
+---
+
+# Rexion Language – Full Overview
+
+## 🧠 Overview
+Rexion is a high-level, statically-typed, instruction-oriented programming language with its own compiler, IR model, assembly backend, and runtime.
+
+## 🗂️ Language Structure
+```rexion
+define x: int;
+x = 5;
+
+func main() {
+    print x;
+}
+
+class Engine extends Core, Display {
+    public func start() {
+        print "Starting Engine";
+    }
+}
+```
+
+## 🧬 Grammar & Keywords
+- `define`, `func`, `class`, `print`, `eval`
+- Visibility: `public`, `private`, `protected`
+- Object keywords: `new`, `super`, `this`, `extends`, `inherit`
+
+## 🧩 Core Data Types
+- `int`, `float`, `string`
+
+## 🎯 Tokens and Lexical Definitions
+Token types like `TOKEN_DEFINE`, `TOKEN_CLASS`, `TOKEN_NUMBER`, `TOKEN_STRING`, etc., with fallback to `TOKEN_UNKNOWN`.
+
+## ⚙️ Intermediate Representation (IR)
+```
+[IR] section .code
+[IR] entry main
+[IR] LOAD R1, 5
+[IR] ADD R3, R1
+...
+```
+
+## 🧱 Assembly Codegen
+NASM-style assembly generated with:
+- Integer and float handling
+- Syscall and `printf` output modes
+- `int_to_str` and `float_to_str` routines
+
+## 🧠 Debugging Modes
+- `--debug-full`: dumps tokens, IR, ASM
+- `--debug-tui`: interactive CLI walkthrough
+
+## 🔬 Compiler Architecture
+```
+rexionc_main → lexer → parser → IR → ASM → .exe
+```
+
+## 🧮 Symbol Table
+- Supports integer and float symbols
+- Dynamic register allocation
+
+## 📎 Advanced Features
+- Float ops, class-based OOP, ray tracing, etc.
+
+## 🚀 Planned Features
+- Branching, arrays, structs, optimization passes
+-----------------------------------------------------------------------------------------------------------------------------------------------
+# Rexion Language – Full Overview
+
+## 🧠 Overview
+Rexion is a high-level, statically-typed, instruction-oriented programming language with its own compiler, IR model, assembly backend, and runtime.
+
+## 🗂️ Language Structure
+```rexion
+define x: int;
+x = 5;
+
+func main() {
+    print x;
+}
+
+class Engine extends Core, Display {
+    public func start() {
+        print "Starting Engine";
+    }
+}
+```
+
+## 🧬 Grammar & Keywords
+- `define`, `func`, `class`, `print`, `eval`
+- Visibility: `public`, `private`, `protected`
+- Object keywords: `new`, `super`, `this`, `extends`, `inherit`
+
+## 🧩 Core Data Types
+- `int`, `float`, `string`
+
+## 🎯 Tokens and Lexical Definitions
+Token types like `TOKEN_DEFINE`, `TOKEN_CLASS`, `TOKEN_NUMBER`, `TOKEN_STRING`, etc., with fallback to `TOKEN_UNKNOWN`.
+
+## ⚙️ Intermediate Representation (IR)
+```
+[IR] section .code
+[IR] entry main
+[IR] LOAD R1, 5
+[IR] ADD R3, R1
+...
+```
+
+## 🧱 Assembly Codegen
+NASM-style assembly generated with:
+- Integer and float handling
+- Syscall and `printf` output modes
+- `int_to_str` and `float_to_str` routines
+
+## 🧠 Debugging Modes
+- `--debug-full`: dumps tokens, IR, ASM
+- `--debug-tui`: interactive CLI walkthrough
+
+## 🔬 Compiler Architecture
+```
+rexionc_main → lexer → parser → IR → ASM → .exe
+```
+
+## 🧮 Symbol Table
+- Supports integer and float symbols
+- Dynamic register allocation
+
+## 📎 Advanced Features
+- Float ops, class-based OOP, ray tracing, etc.
+
+## 🚀 Planned Features
+- Branching, arrays, structs, optimization passes
+-----------------------------------------------------------------------------------------------------------------------------------------------

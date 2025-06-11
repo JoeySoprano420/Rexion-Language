@@ -53,7 +53,7 @@ greet("Violet")
 
 Can also be written with NASM-style explicitness:
 
-*rexion*
+**rexion**
 @func greet(name) -> {
   ::print "Hello, " + name
 }
@@ -63,7 +63,7 @@ Can also be written with NASM-style explicitness:
 
 Or minimal inline NASM-inspired version:
 
-*rexion*
+**rexion**
 ::greet(name)::
   >> print "Hello, " + name
 <<
@@ -106,7 +106,7 @@ greet "Violet"
 * Explicit memory zones: `zone stack`, `zone heap`, `zone volatile`
 * Intrinsic commands like:
 
-  *rexion*
+  **rexion**
   zone(heap): alloc 256b as buffer
   zone(stack): write buffer "Data"
 

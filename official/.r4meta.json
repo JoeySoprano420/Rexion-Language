@@ -1,0 +1,12 @@
+{
+  "macros": [
+    {
+      "name": "PRINT_HELLO",
+      "expansion": "PRINT \"Hello from Macro!\""
+    },
+    {
+      "name": "SET_XY",
+      "expansion": "x = 5;\ny = 6;"
+    }
+  ]
+}

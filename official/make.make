@@ -104,3 +104,20 @@ reload_macros:
 
 complete_macros:
 	./rexionc --complete-macros
+
+REXASM=rexion.rexasm
+ASM=rexion.asm
+EXE=rexion.exe
+R4META=official/macros.r4meta
+
+%.rexasm: %.r4
+	./rexionc_main --meta $< -o $@
+
+%.asm: %.rexasm
+	./rexionc_main --rexasm $< -o $@
+
+%.exe: %.asm
+	nasm -f elf64 $< -o out.o
+	ld out.o -o $@
+
+all: examples/hello_world.exe

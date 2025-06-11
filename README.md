@@ -556,4 +556,523 @@ rexionc_main → lexer → parser → IR → ASM → .exe
 
 ## 🚀 Planned Features
 - Branching, arrays, structs, optimization passes
------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+UPDATE
+________________________________________________________________________________________________
+
+🌌 REXION: Language & Ecosystem Overview (v1.0+)
+
+A Real-Time, Self-Tracing, Macro-Driven Programming Platform
+
+⸻
+
+🧠 What Is Rexion?
+
+Rexion is a hybrid AOT + JIT compiled programming language designed for:
+	•	Instruction-oriented expression
+	•	Macro-based metaprogramming
+	•	Tight NASM x64 alignment
+	•	Self-tracing IR pipelines
+	•	Real CLI + TUI interactive development
+
+It is an abstracted low-level language with high-level macro expressiveness, designed for:
+	•	High-speed builds and live diagnostics
+	•	Structured learning curves from C to Assembly
+	•	Reusable macro bundles, documentation embedding, and opcode mapping
+
+⸻
+
+🧬 Language Core Principles
+	•	UEI Syntax: Universal Executable Instruction structure
+	•	C-based grammar + Python-style semantics
+	•	Minimal symbolic syntax with expressive keywords
+	•	Explicit rule declarations, scopes, modifiers, and types
+	•	Instruction-oriented, not object- or functional-first
+
+⸻
+
+📘 Syntax and Semantics Highlights
+
+define x: int;
+x = 5;
+
+func greet() {
+  print x;
+}
+
+class Hero extends Being, Entity {
+  public define name: string;
+  private func speak() {
+    print name;
+  }
+}
+
+Keywords
+	•	define, func, class, extends, public, private, new, super, this, eval, print, return
+
+Symbols & Instructions
+	•	= mutable assignment
+	•	== immutable
+	•	: type spec or fallback
+	•	; statement end
+	•	|macro| → triggers C.I.A.M.S. block expansion
+	•	->, <-, ~>, !, @, $, ^, %, etc. → instruction modifiers
+	•	# single-line comment, ** multi-line
+
+⸻
+
+🧱 Compiler Architecture
+
+❱ Pipeline
+
+.r4 source → Lexer → Parser → AST → IR (.rexasm) → ASM (.nasm) → Executable (.exe)
+
+❱ Components
+	•	lexer.c / parser.c — tokenization and syntax tree building
+	•	ir_codegen.c — IR and register-level abstraction
+	•	rexion.asm — NASM x64 generation with optional syscall/printf
+	•	rexionc_main.c — full pipeline orchestrator
+
+⸻
+
+🔩 Intermediate Representation (IR)
+
+IR is traceable, readable, and macro-expandable:
+
+[IR] LOAD R1, 5
+[IR] LOAD R2, 3
+[IR] ADD R3, R1
+[IR] ADD R3, R2
+[IR] FLOAT_LOAD F1, 3.14
+[IR] FLOAT_ADD F1, F2
+[IR] PRINT_FLOAT_SYSCALL F1
+
+
+⸻
+
+🛠 Macro System (C.I.A.M.S.)
+
+❱ Inline Macro Format
+
+|macro: fast_add| → expands into:
+  LOAD R1, ...
+  ADD R2, R1
+  STORE ...
+
+❱ .r4meta Bundles
+
+{
+  "fast_add": ["LOAD R1, $val1", "ADD R2, R1", "STORE result, R2"],
+  "greet_user": ["PRINT $name"]
+}
+
+	•	🔁 Live .r4meta reload via filesystem watcher
+	•	🔎 CLI + TUI inspection (--inspect-macros)
+	•	⚙️ Export/share macro bundles (.zip with macro_bundle.json, icon.png, README.md)
+
+⸻
+
+🖥 TUI + CLI System
+
+❱ CLI Flags
+
+rexionc --file examples/hello_world.r4 --debug-full --meta --export-macros
+
+❱ TUI Features
+	•	Color-coded token stream, IR trace, macro overlay
+	•	Real-time banner updates (⚡ Macro reloaded!)
+	•	Toggle views: .r4, IR, .asm, Macro Expansion Tree
+	•	Interactive macro drilldown (TAB to open trace chain)
+
+⸻
+
+🔄 Auto Compilation + Make
+
+make            # builds compiler
+make run        # compiles .r4 → .exe
+make export     # zips macro bundles
+
+Directories:
+	•	/examples/ — .r4 test cases
+	•	/build/ — compiled outputs
+	•	/official/ — grammar, tmLanguage, codex docs
+	•	/docs/ — Markdown & PDF output via generate_codex.py
+
+⸻
+
+📦 Macro Bundle System
+	•	.r4meta file holds all macros
+	•	macro_bundle.json manifests include:
+	•	name, version, author
+	•	dependencies, description
+	•	icon.png, README.md
+	•	✅ CLI autocompletion (--complete-macros)
+	•	🔁 Dynamic macro reload (--reload-macros)
+	•	📦 Macro exporter (--export-macros)
+
+⸻
+
+🧾 Documentation Generator
+
+python3 generate_codex.py
+
+	•	Extracts // DOC: lines from source
+	•	Outputs:
+	•	codex.md — Human-readable Markdown
+	•	codex.pdf — Auto-styled printable document
+	•	Supports cross-file navigation and macro documentation
+
+⸻
+
+🧪 Execution Features
+	•	rexion.exe runs natively on x86_64
+	•	Uses NASM + LD under the hood
+	•	IR-to-ASM fully traceable
+	•	Float and int output via:
+	•	printf
+	•	syscall + custom float_to_str / int_to_str
+	•	Optional --benchmark mode
+
+⸻
+
+💬 Live Examples
+
+define val: float;
+val = 3.14;
+print val;
+
+|macro: clear_and_init|
+
+rexionc --file=examples/init.r4 --meta --debug-full
+
+
+⸻
+
+🔮 Future Goals
+	•	⏱ Lazy-loading macros per file
+	•	🤖 AI-suggested macros based on patterns
+	•	🎮 TUI replay mode for instruction tracing
+	•	📊 Graph-based codex viewer (nodes for macro expansions)
+	•	🧬 JIT inlining optimizer with predictive cache
+
+⸻
+
+Here is a professionally structured, contributor-ready README.md scaffold tailored for the Rexion Language & Compiler Ecosystem:
+
+⸻
+
+
+# ⚙️ REXION Language & Compiler Ecosystem
+
+**Welcome to Rexion** — a revolutionary hybrid language and compiler system designed for performance, clarity, intrinsic self-linking rulesets, and intuitive low-to-high-level expressivity. Whether you're here to contribute, learn, optimize, or explore the core architecture of `.r4` → `.rexasm` → `.asm` → `.exe`, you're in the right place.
+
+---
+
+## 🌐 Ecosystem Highlights
+
+- 📜 `.r4` Source Language – clean, semi-symbolic, instructional logic with macro-first semantics
+- 🧠 C.I.A.M.S. (Contextually Inferred Abstracted Macro Scripts) – powerful inline macros for IR expansion
+- ⚡ Macro Bundles – live-reloading `.r4meta` macro definitions, shareable and ZIP-exportable
+- 🔧 AOT Compiler + JIT Runtime + Debug TUI
+- 🔍 Full IR + ASM + Token Tracing Views
+- 💬 CLI Tools & Interactive Dashboards
+- 🛠️ Real NASM64 Assembly Emission & `.exe` Generation
+- 📘 Auto Codex Generator: `.md` + `.pdf` from inline `// DOC:` lines
+
+---
+
+## 📁 Project Structure
+
+rexion/
+├── src/
+│   ├── lexer.c / parser.c / ir_codegen.c / rexionc_main.c
+│   ├── tui.c / watch_macros.c / codex_gen.c
+│   └── headers/ (token_type.h, parser.h, etc.)
+├── examples/
+│   └── hello_world.r4
+├── macros/
+│   ├── macros.r4meta
+│   └── macro_bundle.json
+├── build/
+│   └── *.rexasm / *.asm / .exe
+├── official/
+│   ├── Rexion.g4 / r4.tmLanguage.json
+├── docs/
+│   └── Order Of Operation.txt / Codex_.md / *.pdf
+├── run_main.sh
+├── Makefile
+└── README.md
+
+---
+
+## 🚀 Getting Started
+
+### 🔧 Requirements
+
+- C Compiler (GCC/Clang)
+- `nasm` + `ld` (for `.asm` → `.exe`)
+- `make`
+- Python 3 (for `generate_codex.py`, `.r4meta` tooling)
+- Optional: `pandoc` for `.pdf` codex generation
+
+### ✅ Build & Run
+
+```bash
+make         # builds the compiler
+make run     # runs against examples/hello_world.r4
+make tui     # launches the interactive visual interface
+make export-macros  # zips macros.r4meta and macro_bundle.json
+
+
+⸻
+
+🧠 Language Overview
+
+define score: int;
+score = 98;
+
+func greet() {
+    print score;
+}
+
+class Student extends Person {
+    private define age: int;
+    public func speak() {
+        print this.age;
+    }
+}
+
+	•	|macro| definitions expand directly into IR blocks
+	•	== denotes constant binding; = is mutable
+	•	Supports: new, this, super, visibility (public, private, protected)
+
+⸻
+
+🔥 Debug, Trace, and Visualize
+
+./rexionc --debug-full --meta macros/macros.r4meta examples/hello_world.r4
+
+	•	Live .r4meta reload
+	•	Macro pulse visualization (⚡ Macro Reloaded!)
+	•	Interactive IR/ASM/Token stepping
+
+⸻
+
+🤝 Contributing
+	1.	Fork + Clone
+	2.	make dev to enter development mode (watchers + logging)
+	3.	Use // DOC: tags to annotate for the codex
+	4.	Submit PRs against the develop branch
+	5.	Run generate_codex.py before final commits
+
+⸻
+
+📦 Macro Bundles
+
+make export-macros
+# outputs: macro_bundle.zip
+
+Includes:
+	•	macros.r4meta
+	•	macro_bundle.json (metadata)
+	•	Optional: icon.png, README.md
+
+Supports import/export across projects and sharing in CI/CD pipelines.
+
+⸻
+
+💡 Inspirations
+
+Rexion draws from:
+	•	NASM64, LLVM IR, and handcrafted compilers
+	•	Instruction-oriented programming theory
+	•	Symbolic logic and macro-linked IR design
+	•	Tactical control flow, minimal syntax, and full-stack generation
+
+⸻
+
+📣 Join the Project
+
+We’re building something immense — compiler, debugger, assembler, macro system, and beyond.
+
+If you’re passionate about:
+	•	Programming language theory
+	•	Compiler engineering
+	•	Macro-based DSLs
+	•	TUI/CLI/IR pipeline tools
+
+📬 We want you on board.
+
+⸻
+
+🧾 License
+
+Modified QSRLC 2.0  License © 2025 Violet Aura Creations Universe
+
+---
+
+Let me know if you'd like this tailored into a version for GitHub Pages or turned into an animated CLI onboarding script.
+
+Here’s a fully structured and contributor-ready **`README.md`** scaffold for your Rexion public repository, tailored for professionalism, clarity, and engagement:
+
+---
+
+```markdown
+# 🧠 Rexion Language
+
+> A high-performance, macro-traceable, NASM-emitting instruction-oriented language with JIT + AOT, live IR/ASM, and a full interactive toolchain.
+
+---
+
+## 🔥 Overview
+
+Rexion is a systems-level language built for speed, clarity, and extreme modularity. With native support for:
+- ✅ **Static AOT + JIT** execution
+- ✅ **NASM x64 + syscall output**
+- ✅ **Macro rewriting from `.r4meta`**
+- ✅ **Live IR + ASM debugging**
+- ✅ **Flowchart-style AST representation**
+- ✅ **TUI + CLI dual-layer interaction**
+- ✅ **Token tracking, IR macros, bundled zip packs**
+- ✅ **Full codex/doc generation from inline `// DOC:` blocks**
+
+Rexion is a compiler project with ambitious design: a language *and* its own macro-driven ecosystem.
+
+---
+
+## 📦 Project Structure
+
+| Path/File               | Purpose                                            |
+|-------------------------|----------------------------------------------------|
+| `/examples/`            | Example `.r4` source files                         |
+| `/official/`            | Grammar, codex scrolls, `.tmLanguage`, etc.       |
+| `/build/`               | Output binaries (`.rexasm`, `.asm`, `.exe`, etc.) |
+| `/docs/`                | Generated Markdown and PDF docs                   |
+| `lexer.c` / `parser.c`  | Core compiler frontend                            |
+| `ir_codegen.c`          | Intermediate representation + NASM backend        |
+| `rexionc_main.c`        | Top-level CLI and full pipeline executor          |
+| `watch_macros.c`        | Background thread for `.r4meta` hot reload        |
+| `generate_codex.py`     | Extracts `// DOC:` blocks → `codex.md` + `pdf`     |
+| `.r4meta`               | Macro registry and metaprogramming definitions    |
+| `Makefile`              | Full build + run toolchain                        |
+
+---
+
+## 🛠 Getting Started
+
+### 🔧 Requirements
+
+- `make`, `gcc`, `nasm`, `ld`
+- `python3` (for doc generation)
+- Optional: `xdotool`, `ncurses` (for advanced TUI)
+
+### 🧪 Build & Run
+
+```bash
+make
+make run FILE=examples/hello_world.r4
+
+To watch macro changes and auto-refresh:
+
+./rexionc --file=examples/hello_world.r4 --debug-full --meta
+
+
+⸻
+
+🎯 CLI Flags
+
+Flag	Description
+--file=	Source .r4 file to compile
+--debug-full	Full token + IR + ASM debug pane
+--meta	Load .r4meta macro bundle
+--inspect-macros	TUI toggle to view macro expansions
+--reload-macros	Force reload macros from disk
+--export-macros	Bundle macros into distributable zip
+--benchmark	Time performance of compilation + runtime
+
+
+⸻
+
+📚 Codex Documentation
+
+To generate Markdown + PDF docs from inline source // DOC: comments:
+
+python3 generate_codex.py
+
+Outputs:
+	•	/docs/codex.md
+	•	/docs/codex.pdf
+
+⸻
+
+📦 Macro Bundles (.r4meta)
+
+Macro bundles allow abstracted scripts to be reused, shared, and traced into .rexasm.
+
+Export a bundle:
+
+make export-macros
+
+Inspect loaded macros in the TUI:
+
+./rexionc --inspect-macros
+
+Each bundle includes:
+	•	macro_bundle.json
+	•	.r4meta source
+	•	README.md + optional icon.png
+
+⸻
+
+🖥 TUI Features
+	•	Real-time token view, IR tree, ASM log
+	•	Macro expansion trace + status (⚡ Macro Reloaded)
+	•	Step-by-step execution trace mode (⏯️)
+	•	Pulse banners + inline registers
+	•	Autocompletion + definition jump
+
+⸻
+
+🤝 Contributing
+
+Pull requests and contributions are encouraged. Here are areas you can help with:
+	•	🧠 Optimizing compilation + JIT
+	•	🧩 Expanding macro packs or .r4meta
+	•	📖 Adding examples or tutorials
+	•	🎨 Enhancing TUI styling and inspection tools
+	•	🧪 Writing test suites or integration scripts
+
+🔧 Local Dev Setup
+
+git clone https://github.com/JOEYSOPRANO420/rexion
+cd rexion
+make
+
+
+⸻
+
+💡 Tips for Contributors
+	•	Follow naming convention: CamelCase for functions, snake_case for variables
+	•	Prefix macro trace logs with [TRACE]
+	•	Keep docstrings short, but use // DOC: lines generously
+
+⸻
+
+📜 License
+
+Modified QSRLC 2.0  License © 2025
+Crafted with ⚙️ and 💜 by Violet Aura Creations and the Rexion Dev Guild
+
+⸻
+
+🌐 Links
+	•	💬 Discord: [coming soon]
+	•	📘 Documentation Site: [coming soon]
+	•	📦 Macro Marketplace: [planned]
+
+⸻
+
+
+---
+
+

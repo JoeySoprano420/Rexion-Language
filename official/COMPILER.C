@@ -138,3 +138,14 @@ int main() {
     printf("\n✅ Shutdown complete.\n");
     return 0;
 }
+
+struct Hitbox {
+    float x, y, width, height;
+};
+
+int check_collision(Hitbox a, Hitbox b) {
+    return (a.x < b.x + b.width &&
+            a.x + a.width > b.x &&
+            a.y < b.y + b.height &&
+            a.y + a.height > b.y);
+}

@@ -148,3 +148,28 @@ void process_intrinsic_layer(char* src_line) {
 }
 
 rewrite_r4_to_rexasm("examples/hello_world.r4", "build/hello_world.rexasm");
+
+#include <dirent.h>
+#include <sys/stat.h>
+
+void batch_process_r4_files(const char* src_dir, const char* out_dir) {
+    DIR* dir = opendir(src_dir);
+    if (!dir) {
+        perror("Could not open source directory");
+        return;
+    }
+
+    struct dirent* entry;
+    while ((entry = readdir(dir))) {
+        if (strstr(entry->d_name, ".r4")) {
+            char input_path[256], output_path[256];
+            snprintf(input_path, sizeof(input_path), "%s/%s", src_dir, entry->d_name);
+            snprintf(output_path, sizeof(output_path), "%s/%.*s.rexasm", out_dir,
+                     (int)(strlen(entry->d_name) - 3), entry->d_name);
+            printf("[BATCH] Processing %s -> %s\n", input_path, output_path);
+            rewrite_r4_to_rexasm(input_path, output_path);
+        }
+    }
+    closedir(dir);
+}
+

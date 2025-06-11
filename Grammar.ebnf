@@ -1,0 +1,23 @@
+program         = { statement } ;
+statement       = func_decl | func_call | assign_stmt | print_stmt ;
+
+func_decl       = "func" identifier "(" [ parameters ] ")" block ;
+parameters      = identifier { "," identifier } ;
+block           = "{" { statement } "}" ;
+
+func_call       = identifier "(" [ arguments ] ")" ;
+arguments       = expression { "," expression } ;
+
+assign_stmt     = identifier "=" expression ;
+print_stmt      = "print" expression ;
+
+expression      = term { ("+" | "-") term } ;
+term            = factor { ("*" | "/") factor } ;
+factor          = number | string | identifier | func_call | "(" expression ")" ;
+
+identifier      = letter { letter | digit | "_" } ;
+number          = digit { digit } ;
+string          = "\"" { character } "\"" ;
+
+letter          = "A".."Z" | "a".."z" ;
+digit           = "0".."9" ;

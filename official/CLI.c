@@ -2,6 +2,29 @@
 #include <stdlib.h>
 #include <string.h>
 
+void stage_ultra_ir() {
+    printf("[IR] CLASS Animal\n");
+    printf("[IR]   FIELD public name : String\n");
+    printf("[IR]   METHOD public speak() { PRINT \"...\" }\n");
+    printf("[IR] ENDCLASS\n");
+
+    printf("[IR] CLASS Dog INHERIT Animal, Pet\n");
+    printf("[IR]   FIELD private breed : String\n");
+    printf("[IR]   METHOD public speak() { PRINT \"Woof!\" }\n");
+    printf("[IR]   METHOD public fetch() { PRINT \"Fetching!\" }\n");
+    printf("[IR] ENDCLASS\n");
+
+    printf("[IR] EVAL (1 + 2 * 3)\n");
+    printf("[IR] STORE <eval_result>, result\n");
+    printf("[IR] PRINT result\n");
+
+    printf("[IR] NEW Dog AS myDog\n");
+    printf("[IR] CALL myDog.speak()\n");
+    printf("[IR] CALL myDog.fetch()\n");
+    printf("[IR] CALL super.speak()\n");
+    printf("[IR] CALL this.speak()\n");
+}
+
 void print_banner() {
     printf("rexionc - REXION Language Compiler v1.0\n");
 }
@@ -66,7 +89,7 @@ int main(int argc, char** argv) {
     print_banner();
 
     if (argc < 2) {
-        printf("Usage: %s [--lex] [--ast] [--ir] [--asm] [--bin] [--run]\n", argv[0]);
+        printf("Usage: %s [--lex] [--ast] [--ir] [--asm] [--bin] [--run] [--ultra-ir]\n", argv[0]);
         return 1;
     }
 
@@ -83,6 +106,8 @@ int main(int argc, char** argv) {
             run_stage("Binary Compile", stage_compile);
         else if (strcmp(argv[i], "--run") == 0)
             run_stage("Execution", stage_run);
+        else if (strcmp(argv[i], "--ultra-ir") == 0)
+            run_stage("Ultra Inheritance & Deep OOP IR", stage_ultra_ir);
         else
             printf("Unknown option: %s\n", argv[i]);
     }

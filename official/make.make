@@ -93,3 +93,14 @@ batch:
 
 batch:
 	./rexionc --batch --meta=official/macros.r4meta --src=examples --out=build
+
+# In your Makefile
+
+export_macros:
+	./rexionc --export-macros macros_bundle.json
+
+reload_macros:
+	./rexionc --reload-macros
+
+complete_macros:
+	./rexionc --complete-macros

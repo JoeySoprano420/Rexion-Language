@@ -4,3 +4,6 @@ glew
 glfw
 opengl
 raylib (optional)
+
+markdown 
+pdfkit

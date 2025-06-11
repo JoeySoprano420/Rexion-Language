@@ -1,0 +1,21 @@
+# Core language and compiler utilities
+lark             # EBNF grammar parsing and AST generation
+colorama         # CLI text coloring for error/debug output
+rich             # Rich CLI formatting and logging
+
+# Visualization and debugging tools
+graphviz         # AST/IR flowchart visualization
+matplotlib       # Memory/register/heap heatmap visualization
+pandas           # Tabular data logging (VM state, run logs)
+
+# Testing and dev tooling
+pytest           # Unit testing
+typing-extensions # For forward-compatible type hints
+
+# Optional: UI Interfaces
+tk               # Built-in Python GUI (no install needed)
+PyQt5            # Optional GUI frontend
+streamlit        # Optional web UI for debugging
+
+# Analytics and trace tools
+psutil           # System stats and memory tracking

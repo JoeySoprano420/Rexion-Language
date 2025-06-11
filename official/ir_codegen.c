@@ -1279,3 +1279,105 @@ void rewrite_r4_to_rexasm(const char* input, const char* output) {
     printf("[REXASM] Generated: %s\n", output);
 }
 
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <math.h>
+#include "token_type.h"
+
+#define MAX_SYMBOLS 128
+
+#define USE_PRINTF 0
+#define USE_SYSCALL 1
+
+typedef struct {
+    char name[32];
+    char reg[4];
+    int is_float;
+} Symbol;
+
+Symbol symtab[MAX_SYMBOLS];
+int symbol_count = 0;
+
+const char* allocate_register(const char* varname, int is_float) {
+    for (int i = 0; i < symbol_count; i++) {
+        if (strcmp(symtab[i].name, varname) == 0)
+            return symtab[i].reg;
+    }
+
+    snprintf(symtab[symbol_count].name, sizeof(symtab[symbol_count].name), "%s", varname);
+    snprintf(symtab[symbol_count].reg, sizeof(symtab[symbol_count].reg), "R%d", symbol_count + 1);
+    symtab[symbol_count].is_float = is_float;
+    return symtab[symbol_count++].reg;
+}
+
+void emit_ir_header() {
+    printf("[IR] section .code\n");
+    printf("[IR] entry main\n");
+}
+
+void emit_ir_operation(const char* op, const char* arg1, const char* arg2) {
+    if (arg2)
+        printf("[IR] %s %s, %s\n", op, arg1, arg2);
+    else
+        printf("[IR] %s %s\n", op, arg1);
+}
+
+void expand_macro_to_ir(const char* macro_name, FILE* output) {
+    if (strcmp(macro_name, "ADDXY") == 0) {
+        fprintf(output, "LOAD R1, x\nLOAD R2, y\nADD R3, R1\nADD R3, R2\nSTORE result, R3\n");
+    } else if (strcmp(macro_name, "HELLOPRINT") == 0) {
+        fprintf(output, "LOAD R1, 'Hello, Rexion!'\nPRINT R1\n");
+    } else {
+        fprintf(output, "; Unknown macro: %s\n", macro_name);
+    }
+}
+
+void rewrite_r4_to_rexasm(const char* input, const char* output) {
+    FILE* fin = fopen(input, "r");
+    FILE* fout = fopen(output, "w");
+
+    if (!fin || !fout) {
+        perror("Failed file I/O");
+        exit(1);
+    }
+
+    char line[256];
+    while (fgets(line, sizeof(line), fin)) {
+        char macro[64];
+        if (sscanf(line, "|%[^|]|", macro) == 1) {
+            fprintf(stdout, "[MACRO TRACE] Expanding: |%s|\n", macro);
+            expand_macro_to_ir(macro, fout);
+        } else {
+            fprintf(fout, "%s", line);
+        }
+    }
+
+    fclose(fin);
+    fclose(fout);
+    printf("[REXASM] Generated: %s\n", output);
+}
+
+void generate_intermediate_code() {
+    emit_ir_header();
+
+    const char* r1 = allocate_register("x", 0);
+    const char* r2 = allocate_register("y", 0);
+    const char* r3 = allocate_register("result", 0);
+    const char* fr1 = allocate_register("f1", 1);
+    const char* fr2 = allocate_register("f2", 1);
+
+    emit_ir_operation("LOAD", r1, "5");
+    emit_ir_operation("LOAD", r2, "3");
+    emit_ir_operation("ADD", r3, r1);
+    emit_ir_operation("ADD", r3, r2);
+    emit_ir_operation("STORE", "result", r3);
+    emit_ir_operation("FLOAT_LOAD", fr1, "3.14");
+    emit_ir_operation("FLOAT_LOAD", fr2, "2.71");
+    emit_ir_operation("FLOAT_ADD", fr1, fr2);
+    emit_ir_operation(USE_PRINTF ? "PRINT_FLOAT_PRINTF" : "PRINT_FLOAT_SYSCALL", fr1, NULL);
+    emit_ir_operation("PRINT", "result", NULL);
+    emit_ir_operation("HALT", NULL, NULL);
+}
+
+// Keep generate_asm_from_ir() as-is from prior version

@@ -84,3 +84,6 @@ tui:
 # Clean artifacts
 clean:
 	rm -f $(OUTPUT) *.o build/*.ir build/*.asm build/*.o build/*.exe
+
+codex:
+	python3 generate_codex.py

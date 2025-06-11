@@ -25,3 +25,11 @@ clean:
 	rm -f $(BIN) *.o rexion.asm rexion.o rexion.exe
 
 .PHONY: all run clean
+
+docs:
+	@echo "Generating Codex PDF and Markdown..."
+	python3 tools/generate_codex.py
+	@echo "Codex generated: ./rexion_language_overview.md and ./Rexion_Language_Codex.pdf"
+
+install: build docs
+	@echo "Installing everything including documentation..."

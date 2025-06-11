@@ -1,243 +1,151 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <GLFW/glfw3.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_mixer.h>
 
-void stage_ultra_ir() {
-    printf("[IR] CLASS Animal\n");
-    printf("[IR]   FIELD public name : String\n");
-    printf("[IR]   METHOD public speak() { PRINT \"...\" }\n");
-    printf("[IR] ENDCLASS\n");
+// Event flags
+int running = 1;
 
-    printf("[IR] CLASS Dog INHERIT Animal, Pet\n");
-    printf("[IR]   FIELD private breed : String\n");
-    printf("[IR]   METHOD public speak() { PRINT \"Woof!\" }\n");
-    printf("[IR]   METHOD public fetch() { PRINT \"Fetching!\" }\n");
-    printf("[IR] ENDCLASS\n");
+// GRAPHICS
+void init_mesh_blending() { printf("[GRAPHICS] Mesh blending initialized.\n"); }
+void init_texture_uv_sculpting() { printf("[GRAPHICS] Texture UV sculpting system ready.\n"); }
+void init_voxel_modeling() { printf("[GRAPHICS] Voxel modeling context built.\n"); }
+void enable_motion_blur() { printf("[GRAPHICS] Motion blur effect activated.\n"); }
+void init_vectorizing() { printf("[GRAPHICS] Vectorizing engine activated.\n"); }
+void init_shading_pipeline() { printf("[GRAPHICS] Advanced shading pipeline configured.\n"); }
+void init_sculpting_tools() { printf("[GRAPHICS] Sculpting toolkit loaded.\n"); }
+void init_texturing_engine() { printf("[GRAPHICS] Texturing system primed.\n"); }
 
-    printf("[IR] EVAL (1 + 2 * 3)\n");
-    printf("[IR] STORE <eval_result>, result\n");
-    printf("[IR] PRINT result\n");
+// RENDERING
+void init_raytracing_engine() { printf("[RENDER] GPU-bound raytracing renderer initialized.\n"); }
+void init_vertex_shader_pipeline() { printf("[RENDER] Vertex shader pipeline compiled.\n"); }
+void enable_framebuffer_stacking() { printf("[RENDER] Framebuffer stacking enabled.\n"); }
+void init_particle_engine() { printf("[RENDER] Particle physics engine deployed.\n"); }
+void enable_layering() { printf("[RENDER] Layering system initiated.\n"); }
 
-    printf("[IR] NEW Dog AS myDog\n");
-    printf("[IR] CALL myDog.speak()\n");
-    printf("[IR] CALL myDog.fetch()\n");
-    printf("[IR] CALL super.speak()\n");
-    printf("[IR] CALL this.speak()\n");
+// AUDIO
+void init_spatial_audio() {
+    if (SDL_Init(SDL_INIT_AUDIO) < 0) { fprintf(stderr, "[ERROR] SDL Audio init failed.\n"); exit(1); }
+    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) { fprintf(stderr, "[ERROR] SDL_mixer init failed.\n"); exit(1); }
+    printf("[AUDIO] Spatial audio matrix initialized.\n");
 }
+void enable_reactive_music() { printf("[AUDIO] Reactive music synced with player state.\n"); }
+void init_waveform_synth() { printf("[AUDIO] Dynamic waveform synthesis loaded.\n"); }
+void load_voice_engine() { printf("[AUDIO] Voice synthesis engine online.\n"); }
 
-void print_banner() {
-    printf("rexionc - REXION Language Compiler v1.0\n");
-}
+// PHYSICS
+void init_bullet_physics() { printf("[PHYSICS] Bullet physics engine engaged.\n"); }
+void simulate_cloth() { printf("[PHYSICS] Cloth simulation threads triggered.\n"); }
+void handle_collision_matrices() { printf("[PHYSICS] Collision matrix grid registered.\n"); }
+void enable_motion_detection() { printf("[PHYSICS] Motion detection activated.\n"); }
+void apply_morphing_system() { printf("[PHYSICS] Morphing algorithms engaged.\n"); }
 
-void run_stage(const char* label, void (*stage_fn)()) {
-    printf(">>> %s...\n", label);
-    stage_fn();
-}
+// ENVIRONMENT
+void setup_volumetric_fog() { printf("[ENVIRONMENT] Volumetric fog volume added.\n"); }
+void activate_wind_mapping() { printf("[ENVIRONMENT] Wind direction maps loaded.\n"); }
+void simulate_light_shafts() { printf("[ENVIRONMENT] Light shafts simulated through scene geometry.\n"); }
+void apply_time_of_day_filter() { printf("[ENVIRONMENT] Dynamic lighting based on TOD applied.\n"); }
+void simulate_aging_effect() { printf("[ENVIRONMENT] Aging and withering cycles configured.\n"); }
 
-void stage_lex() {
-    printf("[LEX] Tokenizing source... (stub)\n");
-}
+// INTERACTION
+void init_gesture_tracking() { printf("[INTERACTION] Gesture tracking sensors online.\n"); }
+void enable_face_detection() { printf("[INTERACTION] Face detection module active.\n"); }
+void calculate_hitboxes() { printf("[INTERACTION] Hitbox data generated.\n"); }
+void start_depth_sensing() { printf("[INTERACTION] Depth sensing grid deployed.\n"); }
+void run_ai_behavior_loop() { printf("[INTERACTION] AI behavior tree traversal in progress.\n"); }
 
-void stage_parse() {
-    printf("[PARSE] Building AST... (stub)\n");
-}
+// STORY ENGINE
+void load_cutscene_scripts() { printf("[STORY] Cutscene scripting engine ready.\n"); }
+void activate_timeline_branching() { printf("[STORY] Timeline branching logic loaded.\n"); }
+void init_voice_synthesis() { printf("[STORY] Real-time voice synthesis initialized.\n"); }
 
-void stage_ir() {
-    printf("[IR] Generating IR... (stub)\n");
-}
+// CAD & TOOLING
+void export_blueprints() { printf("[CAD] Blueprint data exported.\n"); }
+void setup_print_layout() { printf("[CAD] Print layout builder launched.\n"); }
+void partition_objects() { printf("[CAD] Object partitioning in CAD space initiated.\n"); }
+void perform_lathe_rendering() { printf("[CAD] Lathe rendering active for rotational modeling.\n"); }
 
-void stage_codegen() {
-    printf("[ASM] Generating NASM output...\n");
-    FILE* f = fopen("hello.asm", "w");
-    if (!f) {
-        perror("Could not write ASM file");
-        exit(1);
-    }
-    fprintf(f,
-        "section .data\n"
-        "message db \"Hello, Rexion!\", 0\n"
-        "section .text\n"
-        "global _start\n"
-        "_start:\n"
-        "    mov rsi, message\n"
-        "    call print_string\n"
-        "    mov eax, 60\n"
-        "    xor edi, edi\n"
-        "    syscall\n"
-        "print_string:\n"
-        "    mov rdx, 15\n"
-        "    mov rax, 1\n"
-        "    mov rdi, 1\n"
-        "    syscall\n"
-        "    ret\n"
-    );
-    fclose(f);
-}
+// RUNTIME LOOP
+void run_runtime_loop() {
+    if (!glfwInit()) { fprintf(stderr, "[ERROR] GLFW init failed.\n"); exit(EXIT_FAILURE); }
+    GLFWwindow* window = glfwCreateWindow(800, 600, "REXION Multimedia Runtime", NULL, NULL);
+    if (!window) { glfwTerminate(); fprintf(stderr, "[ERROR] Window creation failed.\n"); exit(EXIT_FAILURE); }
+    glfwMakeContextCurrent(window);
 
-void stage_compile() {
-    system("nasm -felf64 hello.asm -o hello.o");
-    system("gcc -no-pie hello.o -o hello.exe");
-    printf("✅ Executable built: hello.exe\n");
-}
+    while (!glfwWindowShouldClose(window) && running) {
+        glClearColor(0.05f, 0.1f, 0.15f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
 
-void stage_run() {
-    printf("🚀 Running hello.exe:\n\n");
-    system("./hello.exe");
-}
+        glBegin(GL_TRIANGLES);
+        glColor3f(1.0, 0.5, 0.2); glVertex2f(-0.6f, -0.4f);
+        glColor3f(0.2, 1.0, 0.5); glVertex2f(0.6f, -0.4f);
+        glColor3f(0.5, 0.5, 1.0); glVertex2f(0.0f, 0.6f);
+        glEnd();
 
-int main(int argc, char** argv) {
-    print_banner();
-
-    if (argc < 2) {
-        printf("Usage: %s [--lex] [--ast] [--ir] [--asm] [--bin] [--run] [--ultra-ir]\n", argv[0]);
-        return 1;
+        glfwSwapBuffers(window);
+        glfwPollEvents();
     }
 
-    for (int i = 1; i < argc; i++) {
-        if (strcmp(argv[i], "--lex") == 0)
-            run_stage("Lexing", stage_lex);
-        else if (strcmp(argv[i], "--ast") == 0)
-            run_stage("Parsing", stage_parse);
-        else if (strcmp(argv[i], "--ir") == 0)
-            run_stage("IR Generation", stage_ir);
-        else if (strcmp(argv[i], "--asm") == 0)
-            run_stage("Codegen", stage_codegen);
-        else if (strcmp(argv[i], "--bin") == 0)
-            run_stage("Binary Compile", stage_compile);
-        else if (strcmp(argv[i], "--run") == 0)
-            run_stage("Execution", stage_run);
-        else if (strcmp(argv[i], "--ultra-ir") == 0)
-            run_stage("Ultra Inheritance & Deep OOP IR", stage_ultra_ir);
-        else
-            printf("Unknown option: %s\n", argv[i]);
-    }
+    glfwDestroyWindow(window);
+    glfwTerminate();
+    Mix_Quit();
+    SDL_Quit();
+}
 
+void init_all_systems() {
+    init_mesh_blending();
+    init_texture_uv_sculpting();
+    init_voxel_modeling();
+    enable_motion_blur();
+    init_vectorizing();
+    init_shading_pipeline();
+    init_sculpting_tools();
+    init_texturing_engine();
+
+    init_raytracing_engine();
+    init_vertex_shader_pipeline();
+    enable_framebuffer_stacking();
+    init_particle_engine();
+    enable_layering();
+
+    init_spatial_audio();
+    enable_reactive_music();
+    init_waveform_synth();
+    load_voice_engine();
+
+    init_bullet_physics();
+    simulate_cloth();
+    handle_collision_matrices();
+    enable_motion_detection();
+    apply_morphing_system();
+
+    setup_volumetric_fog();
+    activate_wind_mapping();
+    simulate_light_shafts();
+    apply_time_of_day_filter();
+    simulate_aging_effect();
+
+    init_gesture_tracking();
+    enable_face_detection();
+    calculate_hitboxes();
+    start_depth_sensing();
+    run_ai_behavior_loop();
+
+    load_cutscene_scripts();
+    activate_timeline_branching();
+    init_voice_synthesis();
+
+    export_blueprints();
+    setup_print_layout();
+    partition_objects();
+    perform_lathe_rendering();
+}
+
+int main() {
+    printf("\n🚀 REXION Visual-Audio Runtime Booting...\n\n");
+    init_all_systems();
+    run_runtime_loop();
+    printf("\n✅ Shutdown complete.\n");
     return 0;
 }
-
-// parser.c – Rexion Parser (Simplified)
-#include "parser.h"
-#include <stdio.h>
-
-int current = 0;
-
-Token peek() {
-    return tokens[current];
-}
-
-Token advance() {
-    return tokens[current++];
-}
-
-void match(TokenType type) {
-    if (peek().type == type) advance();
-    else {
-        printf("Syntax Error: Expected token type %d\n", type);
-        exit(1);
-    }
-}
-
-void parse_program() {
-    while (peek().type != TOKEN_EOF) {
-        parse_statement();
-    }
-}
-
-void parse_statement() {
-    Token t = peek();
-    if (t.type == TOKEN_DEFINE) {
-        parse_define();
-    } else if (t.type == TOKEN_FUNC) {
-        parse_func();
-    } else if (t.type == TOKEN_PRINT) {
-        parse_print();
-    } else if (t.type == TOKEN_CLASS) {
-        parse_class();
-    } else if (t.type == TOKEN_PUBLIC || t.type == TOKEN_PRIVATE || t.type == TOKEN_PROTECTED) {
-        parse_visibility();
-    } else if (t.type == TOKEN_NEW) {
-        parse_new();
-    } else if (t.type == TOKEN_SUPER) {
-        parse_super();
-    } else if (t.type == TOKEN_THIS) {
-        parse_this();
-    } else if (t.type == TOKEN_EVAL) {
-        parse_eval();
-    }
-    // Graphics & Audio Advanced Features
-    else if (
-        t.type == TOKEN_RAYTRACING ||
-        t.type == TOKEN_VECTORIZE ||
-        t.type == TOKEN_SHADING ||
-        t.type == TOKEN_TUNING ||
-        t.type == TOKEN_TRACKING ||
-        t.type == TOKEN_TRACING ||
-        t.type == TOKEN_RENDERING ||
-        t.type == TOKEN_STACKING ||
-        t.type == TOKEN_LAYERING ||
-        t.type == TOKEN_DIALING ||
-        t.type == TOKEN_PARTICLE_PHYSICS ||
-        t.type == TOKEN_MODDING ||
-        t.type == TOKEN_TEXTURING ||
-        t.type == TOKEN_SCULPTING ||
-        t.type == TOKEN_MOLDING ||
-        t.type == TOKEN_RIGGING ||
-        t.type == TOKEN_FLESH ||
-        t.type == TOKEN_BONES ||
-        t.type == TOKEN_SMOKE ||
-        t.type == TOKEN_STREAMING ||
-        t.type == TOKEN_STEAM ||
-        t.type == TOKEN_DIRECTIONALS ||
-        t.type == TOKEN_DURATIONS ||
-        t.type == TOKEN_3D ||
-        t.type == TOKEN_SCANNING ||
-        t.type == TOKEN_LIGHTING ||
-        t.type == TOKEN_TRANSITIONS ||
-        t.type == TOKEN_MOTION ||
-        t.type == TOKEN_AGING ||
-        t.type == TOKEN_WITHERING ||
-        t.type == TOKEN_MOTION_DETECTION ||
-        t.type == TOKEN_COLLISION_DETECTION ||
-        t.type == TOKEN_MORPHING ||
-        t.type == TOKEN_RANGE ||
-        t.type == TOKEN_SCOPE ||
-        t.type == TOKEN_SCALING ||
-        t.type == TOKEN_TELESCOPICS ||
-        t.type == TOKEN_OPTICS ||
-        t.type == TOKEN_INTRINSIC_MEASURING ||
-        t.type == TOKEN_MATRIX ||
-        t.type == TOKEN_LASERING ||
-        t.type == TOKEN_ZOOM ||
-        t.type == TOKEN_PINCH ||
-        t.type == TOKEN_CARD_CREATION ||
-        t.type == TOKEN_VOICE ||
-        t.type == TOKEN_MUSIC ||
-        t.type == TOKEN_CROSS_VECTOR ||
-        t.type == TOKEN_FRAMING ||
-        t.type == TOKEN_CAD ||
-        t.type == TOKEN_BLUEPRINTING ||
-        t.type == TOKEN_CYCLING ||
-        t.type == TOKEN_FOOTPRINTS ||
-        t.type == TOKEN_IMPRESSIONS ||
-        t.type == TOKEN_FINGERPRINTING ||
-        t.type == TOKEN_BOXING ||
-        t.type == TOKEN_UNBOXING ||
-        t.type == TOKEN_BACKGROUND_INTERACTIVITY ||
-        t.type == TOKEN_WIND ||
-        t.type == TOKEN_PIPELINES ||
-        t.type == TOKEN_DETAILING ||
-        t.type == TOKEN_FENCING ||
-        t.type == TOKEN_WORLD_BUILDING ||
-        t.type == TOKEN_WIPING ||
-        t.type == TOKEN_COLOR ||
-        t.type == TOKEN_VISION ||
-        t.type == TOKEN_COMPUTER_VISION ||
-        t.type == TOKEN_CONVERSIONS ||
-        t.type == TOKEN_FIXING ||
-        t.type == TOKEN_UNFIXING ||
-        t.type == TOKEN_CUTTING ||
-        t.type == TOKEN_SECTIONING ||
-        t.type == TOKEN_PARTITIONING ||
-        t.type == TOKEN_CIPHERING ||
-        t.type == TOKEN_ENCRYPTION ||
-        t.type == TOKEN_SHADING

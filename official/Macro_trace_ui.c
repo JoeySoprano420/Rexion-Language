@@ -54,3 +54,62 @@ void auto_watch_r4meta_and_reload(const char* macro_file) {
         sleep(2);
     }
 }
+
+// Macro Trace UI – Real-time .r4meta visual macro reloads
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <pthread.h>
+#include <unistd.h>
+#include <sys/inotify.h>
+
+#define META_FILE "macros.r4meta"
+#define EVENT_SIZE  (sizeof(struct inotify_event))
+#define EVENT_BUF_LEN     (1024 * (EVENT_SIZE + 16))
+
+volatile int macro_reload_flag = 0;
+
+void* watch_macros(void* arg) {
+    int fd = inotify_init();
+    if (fd < 0) { perror("inotify_init"); exit(1); }
+
+    int wd = inotify_add_watch(fd, META_FILE, IN_MODIFY);
+    if (wd == -1) { perror("inotify_add_watch"); exit(1); }
+
+    char buffer[EVENT_BUF_LEN];
+    while (1) {
+        int length = read(fd, buffer, EVENT_BUF_LEN);
+        if (length < 0) { perror("read"); break; }
+
+        macro_reload_flag = 1;
+        printf("\033[1;35m⚡ Macro reloaded! [%s]\033[0m\n", META_FILE);
+    }
+    inotify_rm_watch(fd, wd);
+    close(fd);
+    return NULL;
+}
+
+void start_macro_watcher() {
+    pthread_t thread;
+    pthread_create(&thread, NULL, watch_macros, NULL);
+    pthread_detach(thread);
+}
+
+void tui_macro_banner() {
+    if (macro_reload_flag) {
+        printf("\033[1;34m[MacroTUI]\033[0m \033[1;33mLive macro reload detected!\033[0m\n");
+        macro_reload_flag = 0;
+    }
+}
+
+// Export macro bundle as .zip
+void export_macro_bundle(const char* outpath) {
+    printf("\033[1;36m[Export]\033[0m Bundling macros to: %s\n", outpath);
+    system("mkdir -p macro_export/docs && cp macros.r4meta macro_export/ && cp README.md macro_export/docs/ && cp icon.png macro_export/");
+    char cmd[256];
+    snprintf(cmd, sizeof(cmd), "zip -r %s macro_export/ > /dev/null", outpath);
+    system(cmd);
+    printf("\033[1;32m[✓]\033[0m Export complete.\n");
+}
+

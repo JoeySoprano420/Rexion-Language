@@ -322,4 +322,49 @@ void batch_process_r4_files(const char* src_dir, const char* out_dir) {
     closedir(dir);
 }
 
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include "macro_loader.h"  // must contain macro loader/export interface
 
+void print_help() {
+    printf("Rexion Compiler Options:\n");
+    printf("  --meta <file>           Load .r4meta macro definition file\n");
+    printf("  --complete-macros       Show all macro completions\n");
+    printf("  --reload-macros         Dynamically reload macros without recompilation\n");
+    printf("  --export-macros <path>  Export macros as shareable bundle\n");
+    // ... other flags
+}
+
+int main(int argc, char* argv[]) {
+    if (argc < 2) {
+        print_help();
+        return 1;
+    }
+
+    if (strcmp(argv[1], "--meta") == 0 && argc > 2) {
+        load_macros(argv[2]);
+        printf("✅ Macros loaded from: %s\n", argv[2]);
+        return 0;
+    }
+
+    if (strcmp(argv[1], "--complete-macros") == 0) {
+        list_macro_completions();  // prints all macros
+        return 0;
+    }
+
+    if (strcmp(argv[1], "--reload-macros") == 0) {
+        reload_macros_live();
+        printf("🔁 Macros reloaded from disk\n");
+        return 0;
+    }
+
+    if (strcmp(argv[1], "--export-macros") == 0 && argc > 2) {
+        export_macro_bundle(argv[2]);
+        printf("📦 Macros exported to: %s\n", argv[2]);
+        return 0;
+    }
+
+    // ... normal compilation flow (lexer → parser → ir → asm → exe)
+    return 0;
+}

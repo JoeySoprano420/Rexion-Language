@@ -29,14 +29,14 @@
 | **Grammar**         | C-compliant rules, Python-style indentation optional                           |
 | **Semantics**       | Pythonic clarity, English-like simplicity                                      |
 | **Syntax**          | Minimalist, NASM-inspired punctuation + symbolic structures                    |
-| **Indentation**     | Optional (structured via flow brackets or `->`)                                |
+| **Indentation**     | Optional (structured via flow brackets or “->“)                                |
 | **Execution**       | AOT (default) + optional JIT (hybrid runtime optimization)                     |
 | **Output**          | Raw machine code + IR mapping table                                            |
 | **Optimization**    | On-the-fly during JIT, static during AOT                                       |
 | **Error Handling**  | Live, context-aware, non-fatal diagnostic pipelines                            |
 | **Memory Handling** | Deep, manual + abstracted intrinsics, no GC unless invoked explicitly          |
-| **IR Structure**    | Serialized table: `Instruction Flow → Context Reference → Abstraction Mapping` |
-| **AST**             | Flow-chart model: `Instruction (NASM-style)` → `Hex` Mapping                   |
+| **IR Structure**    | Serialized table: “Instruction Flow → Context Reference → Abstraction Mapping” |
+| **AST**             | Flow-chart model: “Instruction (NASM-style)” → “Hex” Mapping                   |
 
 ---
 
@@ -52,7 +52,7 @@ func greet(name)
 greet("Violet")
 
 
-Can also be written with NASM-style explicitness:
+**[Can also be written with NASM-style explicitness:]**
 
 **(Rexion)**
 
@@ -63,7 +63,7 @@ Can also be written with NASM-style explicitness:
 @call greet("Violet")
 
 
-Or minimal inline NASM-inspired version:
+**[Or minimal inline NASM-inspired version:]**
 
 **(Rexion)**
 
@@ -94,7 +94,7 @@ greet "Violet"
 
 1. **Lexer** — Tokenizes minimal syntax into high-level pseudo-instructions
 2. **Parser** — Applies C-style AST construction with optional indentation analysis
-3. **AST Builder** — Converts code into `Flow-NASM-Hex` representation
+3. **AST Builder** — Converts code into “Flow-NASM-Hex” representation
 4. **IR Serializer** — Stores all instructions in reference-linked mapping table
 5. **AOT Compiler** — Converts IR to optimized machine code
 6. **JIT Layer (optional)** — Optimizes branches in real time based on live metrics
@@ -104,9 +104,9 @@ greet "Violet"
 
 ### 🧠 **[Memory Architecture]**
 
-* Manual allocation (`alloc`, `free`) for low-level dev
-* Auto-scope-based cleanup optional (`autofree`)
-* Explicit memory zones: `zone stack`, `zone heap`, `zone volatile`
+* Manual allocation (“alloc”, “free”) for low-level dev
+* Auto-scope-based cleanup optional (“autofree”)
+* Explicit memory zones: “zone stack”, “zone heap”, “zone volatile”
 * Intrinsic commands like:
 
   **(Rexion)**
@@ -117,13 +117,13 @@ greet "Violet"
 
 ---
 
-### 📌 **Minimal Punctuation Rules**
+### 📌 **[Minimal Punctuation Rules]**
 
-* `::` for instruction block
-* `->` for directional flow / return
-* `@` for declarations
-* `>> <<` for instruction groupings
-* `#` for comment
+* "::" for instruction block
+* "->" for directional flow / return
+* "@" for declarations
+* ">> <<" for instruction groupings
+* "#" for comment
 
 ---
 

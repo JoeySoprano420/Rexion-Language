@@ -1,14 +1,57 @@
-
 // lexer.c – Rexion Lexer (Simplified)
 #include "lexer.h"
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 Token tokens[MAX_TOKENS];
 int token_count = 0;
 const char* src;
 int pos = 0;
+
+// Forward declaration
+int deep_eval(int start, int end);
+
+// Add these to your TokenType enum:
+TOKEN_CLASS,
+TOKEN_EXTENDS,
+TOKEN_PUBLIC,
+TOKEN_PRIVATE,
+TOKEN_PROTECTED,
+TOKEN_NEW,
+TOKEN_SUPER,
+TOKEN_THIS,
+TOKEN_INHERIT,
+
+// Helper: get precedence
+int precedence(TokenType type) {
+    if (type == TOKEN_ASSIGN) return 1;
+    if (type == TOKEN_SEMI) return 0;
+    // Add more as needed
+    return -1;
+}
+
+// Deeply evaluate tokens from start to end (exclusive)
+int deep_eval(int start, int end) {
+    int result = 0;
+    int i = start;
+    while (i < end) {
+        if (tokens[i].type == TOKEN_NUMBER) {
+            result = atoi(tokens[i].text);
+            i++;
+        } else if (tokens[i].type == TOKEN_ASSIGN) {
+            // Example: a = 5; (skip for now)
+            i++;
+        } else if (tokens[i].type == TOKEN_SEMI) {
+            i++;
+        } else {
+            // Unknown or unsupported token
+            i++;
+        }
+    }
+    return result;
+}
 
 void add_token(TokenType type, const char* text) {
     Token t;
@@ -35,6 +78,7 @@ void lex(const char* input) {
             if (strcmp(current, "define") == 0) add_token(TOKEN_DEFINE, current);
             else if (strcmp(current, "func") == 0) add_token(TOKEN_FUNC, current);
             else if (strcmp(current, "print") == 0) add_token(TOKEN_PRINT, current);
+            else if (strcmp(current, "inherit") == 0) add_token(TOKEN_INHERIT, current);
             else add_token(TOKEN_IDENT, current);
             continue;
         }

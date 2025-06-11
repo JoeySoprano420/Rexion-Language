@@ -2,7 +2,7 @@
 
 ---
 
-### ⚙️ **Rexion Language Definition (Spec Draft v0.1)**
+### ⚙️ **[Rexion Language Definition (Spec v 1.0.1)]**
 
 #### 🔹 **General Identity**
 
@@ -40,9 +40,9 @@
 
 ---
 
-### 🧾 **Example Syntax**
+### 🧾 **{Example Syntax}**
 
-**rexion**
+**(Rexion)**
 
 func greet(name)
 {
@@ -54,7 +54,7 @@ greet("Violet")
 
 Can also be written with NASM-style explicitness:
 
-**rexion**
+**(Rexion)**
 
 @func greet(name) -> {
   ::print "Hello, " + name
@@ -65,7 +65,7 @@ Can also be written with NASM-style explicitness:
 
 Or minimal inline NASM-inspired version:
 
-**rexion**
+**(Rexion)**
 
 ::greet(name)::
   >> print "Hello, " + name
@@ -76,7 +76,7 @@ greet "Violet"
 
 ---
 
-### 🗃️ **Rexion Intermediate Representation (RIR) Sample**
+### 🗃️ **[Rexion Intermediate Representation (RIR) Sample]**
 
 
 [FUNC_DECL] -> greet
@@ -90,7 +90,7 @@ greet "Violet"
 
 ---
 
-### 🧩 **Compiler Pipeline**
+### 🧩 **[Compiler Pipeline]**
 
 1. **Lexer** — Tokenizes minimal syntax into high-level pseudo-instructions
 2. **Parser** — Applies C-style AST construction with optional indentation analysis
@@ -102,14 +102,15 @@ greet "Violet"
 
 ---
 
-### 🧠 **Memory Architecture**
+### 🧠 **[Memory Architecture]**
 
 * Manual allocation (`alloc`, `free`) for low-level dev
 * Auto-scope-based cleanup optional (`autofree`)
 * Explicit memory zones: `zone stack`, `zone heap`, `zone volatile`
 * Intrinsic commands like:
 
-  **rexion**
+  **(Rexion)**
+  
   zone(heap): alloc 256b as buffer
   zone(stack): write buffer "Data"
 

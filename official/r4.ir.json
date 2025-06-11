@@ -1,0 +1,8 @@
+[
+    { "op": "IMPORT", "target": "std/io.r4" },
+    { "op": "DECLARE", "name": "message", "type": "string" },
+    { "op": "LOAD_STR", "dest": "R1", "value": "Hello, Rexion!" },
+    { "op": "STORE", "src": "R1", "dest": "message" },
+    { "op": "PRINT", "value": "message" },
+    { "op": "HALT" }
+]

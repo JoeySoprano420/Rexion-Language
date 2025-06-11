@@ -1,0 +1,26 @@
+{
+    "type": "Program",
+    "body": [
+        {
+            "type": "Import",
+            "path": "std/io.r4"
+        },
+        {
+            "type": "Declaration",
+            "name": "message",
+            "valueType": "string"
+        },
+        {
+            "type": "Assignment",
+            "target": "message",
+            "value": {
+                "type": "StringLiteral",
+                "value": "Hello, Rexion!"
+            }
+        },
+        {
+            "type": "Print",
+            "identifier": "message"
+        }
+    ]
+}

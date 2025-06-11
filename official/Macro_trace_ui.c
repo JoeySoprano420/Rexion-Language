@@ -113,3 +113,192 @@ void export_macro_bundle(const char* outpath) {
     printf("\033[1;32m[✓]\033[0m Export complete.\n");
 }
 
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <math.h>
+#include "token_type.h"
+#include <pthread.h>
+#include <unistd.h>
+#include <sys/inotify.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <dirent.h>
+#include <zip.h>
+
+#define MAX_SYMBOLS 128
+#define USE_PRINTF 0
+#define USE_SYSCALL 1
+
+#define MACRO_META_PATH "macros.r4meta"
+#define MACRO_ZIP_EXPORT "macro_bundle.zip"
+
+pthread_t macro_watcher_thread;
+int macro_reload_flag = 0;
+
+typedef struct {
+    char name[32];
+    char reg[4];
+    int is_float;
+} Symbol;
+
+Symbol symtab[MAX_SYMBOLS];
+int symbol_count = 0;
+
+const char* allocate_register(const char* varname, int is_float) {
+    for (int i = 0; i < symbol_count; i++) {
+        if (strcmp(symtab[i].name, varname) == 0)
+            return symtab[i].reg;
+    }
+    snprintf(symtab[symbol_count].name, sizeof(symtab[symbol_count].name), "%s", varname);
+    snprintf(symtab[symbol_count].reg, sizeof(symtab[symbol_count].reg), "R%d", symbol_count + 1);
+    symtab[symbol_count].is_float = is_float;
+    return symtab[symbol_count++].reg;
+}
+
+void emit_ir_header() {
+    printf("[IR] section .code\n");
+    printf("[IR] entry main\n");
+}
+
+void emit_ir_operation(const char* op, const char* arg1, const char* arg2) {
+    if (arg2)
+        printf("[IR] %s %s, %s\n", op, arg1, arg2);
+    else
+        printf("[IR] %s %s\n", op, arg1);
+}
+
+void generate_intermediate_code() {
+    emit_ir_header();
+    const char* r1 = allocate_register("x", 0);
+    const char* r2 = allocate_register("y", 0);
+    const char* r3 = allocate_register("result", 0);
+    const char* fr1 = allocate_register("f1", 1);
+    const char* fr2 = allocate_register("f2", 1);
+
+    emit_ir_operation("LOAD", r1, "5");
+    emit_ir_operation("LOAD", r2, "3");
+    emit_ir_operation("ADD", r3, r1);
+    emit_ir_operation("ADD", r3, r2);
+    emit_ir_operation("STORE", "result", r3);
+    emit_ir_operation("FLOAT_LOAD", fr1, "3.14");
+    emit_ir_operation("FLOAT_LOAD", fr2, "2.71");
+    emit_ir_operation("FLOAT_ADD", fr1, fr2);
+    emit_ir_operation(USE_PRINTF ? "PRINT_FLOAT_PRINTF" : "PRINT_FLOAT_SYSCALL", fr1, NULL);
+    emit_ir_operation("PRINT", "result", NULL);
+    emit_ir_operation("HALT", NULL, NULL);
+}
+
+void generate_asm_from_ir(); // Forward declaration
+
+void* watch_macros(void* arg) {
+    int fd = inotify_init();
+    if (fd < 0) perror("inotify_init");
+    inotify_add_watch(fd, MACRO_META_PATH, IN_MODIFY);
+
+    char buf[4096];
+    while (1) {
+        int length = read(fd, buf, sizeof(buf));
+        if (length > 0) {
+            macro_reload_flag = 1;
+            printf("\n⚡ Macro reloaded!\n");
+            // Reload and trigger IR regeneration or TUI pulse
+            generate_intermediate_code();
+            generate_asm_from_ir();
+        }
+        sleep(1);
+    }
+    close(fd);
+    return NULL;
+}
+
+void export_macro_bundle() {
+    int error;
+    zip_t* archive = zip_open(MACRO_ZIP_EXPORT, ZIP_CREATE | ZIP_TRUNCATE, &error);
+    if (!archive) {
+        fprintf(stderr, "[ERROR] Cannot create ZIP bundle\n");
+        return;
+    }
+
+    zip_file_add(archive, "macros.r4meta", zip_source_file(archive, MACRO_META_PATH, 0, 0), ZIP_FL_OVERWRITE);
+    zip_file_add(archive, "README.md", zip_source_file(archive, "README.md", 0, 0), ZIP_FL_OVERWRITE);
+    zip_file_add(archive, "icon.png", zip_source_file(archive, "icon.png", 0, 0), ZIP_FL_OVERWRITE);
+    zip_file_add(archive, "macro_bundle.json", zip_source_file(archive, "macro_bundle.json", 0, 0), ZIP_FL_OVERWRITE);
+
+    zip_close(archive);
+    printf("📦 Macro bundle exported to %s\n", MACRO_ZIP_EXPORT);
+}
+
+void start_macro_watcher() {
+    pthread_create(&macro_watcher_thread, NULL, watch_macros, NULL);
+}
+
+void generate_asm_from_ir() {
+    FILE* f = fopen("rexion.asm", "w");
+    if (!f) { perror("Failed to write ASM"); return; }
+
+    fprintf(f,
+        "section .data\n"
+        "result dq 0\n"
+        "buffer db 64 dup(0)\n"
+        "fltval dq 3.14\n"
+        "fltval2 dq 2.71\n"
+        "fltstr db 64 dup(0)\n"
+        "newline db 0xA, 0\n"
+        "fmt db '%%f', 10, 0\n"
+        "section .text\n"
+        "extern printf\n"
+        "global _start\n"
+        "_start:\n"
+        "    mov rax, 5\n"
+        "    mov rbx, 3\n"
+        "    add rcx, rax\n"
+        "    add rcx, rbx\n"
+        "    mov [result], rcx\n"
+        "\n"
+        "    fld qword [fltval]\n"
+        "    fadd qword [fltval2]\n"
+        "    fstp qword [fltstr]\n"
+        "\n"
+        "    %s\n"
+        "\n"
+        "    mov rdi, rcx\n"
+        "    mov rsi, buffer\n"
+        "    call int_to_str\n"
+        "    mov rdx, rax\n"
+        "    mov rax, 1\n"
+        "    mov rdi, 1\n"
+        "    mov rsi, buffer\n"
+        "    syscall\n"
+        "    mov rax, 1\n"
+        "    mov rdi, 1\n"
+        "    mov rsi, newline\n"
+        "    mov rdx, 1\n"
+        "    syscall\n"
+        "    mov eax, 60\n"
+        "    xor edi, edi\n"
+        "    syscall\n"
+        "\n"
+        "int_to_str:\n"
+        "    mov rbx, 10\n"
+        "    mov rax, rdi\n"
+        "    xor rcx, rcx\n"
+        "    add rsi, 63\n"
+        "    mov byte [rsi], 0\n"
+        "convert_loop:\n"
+        "    xor rdx, rdx\n"
+        "    div rbx\n"
+        "    add dl, '0'\n"
+        "    dec rsi\n"
+        "    mov [rsi], dl\n"
+        "    inc rcx\n"
+        "    test rax, rax\n"
+        "    jnz convert_loop\n"
+        "    mov rax, rcx\n"
+        "    ret\n"
+        , USE_PRINTF ? "lea rdi, [rel fmt]\n    movq xmm0, [fltstr]\n    mov rax, 1\n    call printf" : "call float_to_str\n    mov rdx, rax\n    mov rax, 1\n    mov rdi, 1\n    mov rsi, buffer\n    syscall");
+
+    fclose(f);
+    printf("[ASM] rexion.asm generated from IR\n");
+}

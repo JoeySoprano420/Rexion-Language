@@ -1,5 +1,6 @@
 import re
 import struct
+import os
 
 def generate_ir(ast):
     ir = []
@@ -755,3 +756,151 @@ def ir_to_bin(ir, filename="rexion_output.bin"):
 # ir = generate_ir(ast)
 # ir_to_bin(ir, filename="rexion_output.bin")
 
+import os
+
+INSTR = {
+    "MOV":   0x10,  # MOV reg, value
+    "ADD":   0x11,  # ADD reg, a, b
+    "SUB":   0x12,  # SUB reg, a, b
+    "MUL":   0x13,  # MUL reg, a, b
+    "DIV":   0x14,  # DIV reg, a, b
+    "OUT":   0x20,  # OUT reg
+    "CALL":  0x30,  # CALL addr
+    "RETURN":0x40,  # RETURN
+    "IF":    0x50,  # IF reg, skip_bytes
+    "ELSE":  0x51,  # ELSE skip_bytes
+    "END_IF":0x52,  # END_IF
+    "WHILE": 0x60,  # WHILE reg, skip_bytes
+    "END_WHILE":0x61,# END_WHILE
+    "FUNC_END": 0xFF, # FUNC_END
+    "NOP":   0x00,
+}
+
+REGISTERS = {f"R{i}": i for i in range(8)}
+VARIABLE_REGISTRY = {}
+REGISTER_USAGE = [False] * 8
+LABELS = {}
+PATCHES = []
+
+def allocate_register(var):
+    if var in VARIABLE_REGISTRY:
+        return VARIABLE_REGISTRY[var]
+    for i in range(8):
+        if not REGISTER_USAGE[i]:
+            REGISTER_USAGE[i] = True
+            VARIABLE_REGISTRY[var] = i
+            return i
+    raise RuntimeError("No free registers!")
+
+def reg_num(var):
+    if var in VARIABLE_REGISTRY:
+        return VARIABLE_REGISTRY[var]
+    return allocate_register(var)
+
+def reset_registers():
+    global VARIABLE_REGISTRY, REGISTER_USAGE
+    VARIABLE_REGISTRY = {}
+    REGISTER_USAGE = [False] * 8
+
+def encode_ir_line(line):
+    tokens = line.replace(',', ' ').replace('=', ' = ').split()
+    encoded = bytearray()
+    if line.endswith(":"):
+        label = line.strip(":")
+        LABELS[label] = len(bytecode)
+        return encoded
+
+    if "[DECLARE]" in line or "[ASSIGN]" in line or "[MOV]" in line:
+        reg = reg_num(tokens[1])
+        try:
+            val = int(tokens[3])
+            encoded += bytes([INSTR["MOV"], reg, val])
+        except ValueError:
+            reg_src = reg_num(tokens[3])
+            encoded += bytes([INSTR["MOV"], reg, reg_src])
+
+    elif "[ADD]" in line or "[SUB]" in line or "[MUL]" in line or "[DIV]" in line:
+        op = "ADD" if "[ADD]" in line else "SUB" if "[SUB]" in line else "MUL" if "[MUL]" in line else "DIV"
+        reg = reg_num(tokens[1])
+        a = reg_num(tokens[3])
+        b = reg_num(tokens[5])
+        encoded += bytes([INSTR[op], reg, a, b])
+
+    elif "[PRINT]" in line or "[OUT]" in line:
+        reg = reg_num(tokens[-1])
+        encoded += bytes([INSTR["OUT"], reg])
+
+    elif "[CALL]" in line:
+        encoded += bytes([INSTR["CALL"], 0x00])  # Patch later
+        PATCHES.append(("CALL", len(bytecode) + len(encoded) - 1, tokens[1]))
+
+    elif "[RETURN]" in line:
+        encoded += bytes([INSTR["RETURN"]])
+
+    elif "[IF]" in line:
+        reg = reg_num(tokens[1])
+        encoded += bytes([INSTR["IF"], reg, 0x00])  # Patch skip later
+        PATCHES.append(("IF", len(bytecode) + len(encoded) - 1, None))
+
+    elif "[ELSE]" in line:
+        encoded += bytes([INSTR["ELSE"], 0x00])
+        PATCHES.append(("ELSE", len(bytecode) + len(encoded) - 1, None))
+
+    elif "[END_IF]" in line:
+        encoded += bytes([INSTR["END_IF"]])
+
+    elif "[WHILE]" in line:
+        reg = reg_num(tokens[1])
+        encoded += bytes([INSTR["WHILE"], reg, 0x00])
+        PATCHES.append(("WHILE", len(bytecode) + len(encoded) - 1, None))
+
+    elif "[END_WHILE]" in line:
+        encoded += bytes([INSTR["END_WHILE"]])
+
+    elif "[FUNC_END]" in line:
+        encoded += bytes([INSTR["FUNC_END"]])
+
+    else:
+        encoded += bytes([INSTR["NOP"]])
+
+    return encoded
+
+def apply_patches(bytecode):
+    for kind, index, target in PATCHES:
+        if kind == "CALL" and target in LABELS:
+            bytecode[index] = LABELS[target]
+        elif kind in ["IF", "ELSE", "WHILE"]:
+            bytecode[index] = 4  # Static for now (could calculate jump)
+    return bytecode
+
+def ir_to_bin_advanced(ir_lines, output_file="/mnt/data/rexion_output.bin"):
+    global bytecode
+    reset_registers()
+    bytecode = bytearray()
+    for line in ir_lines:
+        encoded = encode_ir_line(line)
+        bytecode += encoded
+
+    bytecode = apply_patches(bytecode)
+
+    with open(output_file, "wb") as f:
+        f.write(bytecode)
+
+    return output_file
+
+# Example IR for test
+sample_ir = [
+    "[DECLARE] x = 10",
+    "[DECLARE] y = 5",
+    "[ADD] z = x + y",
+    "[PRINT] -> z",
+    "loop_start:",
+    "[WHILE] x",
+    "[SUB] x = x - y",
+    "[PRINT] -> x",
+    "[END_WHILE]",
+    "[FUNC_END]"
+]
+
+path = ir_to_bin_advanced(sample_ir)
+path

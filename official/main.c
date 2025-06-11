@@ -173,3 +173,4 @@ void batch_process_r4_files(const char* src_dir, const char* out_dir) {
     closedir(dir);
 }
 
+batch_process_r4_files("examples", "build");

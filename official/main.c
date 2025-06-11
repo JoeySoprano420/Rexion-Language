@@ -374,3 +374,18 @@ void load_macros(const char* filename);
 void list_macro_completions();
 void reload_macros_live();
 void export_macro_bundle(const char* path);
+
+else if (strcmp(argv[i], "--meta") == 0) {
+    if (i + 1 < argc) {
+        load_macros("official/macros.r4meta");
+        rewrite_r4_to_rexasm(argv[i + 1], "rexion.rexasm");
+    }
+}
+else if (strcmp(argv[i], "--rexasm") == 0) {
+    if (i + 1 < argc) {
+        // direct rexasm → asm → exe pipeline
+        generate_asm_from_rexasm(argv[i + 1]);
+    }
+}
+
+

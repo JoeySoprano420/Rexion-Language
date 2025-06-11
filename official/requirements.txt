@@ -1,0 +1,6 @@
+sdl2
+sdl2_mixer
+glew
+glfw
+opengl
+raylib (optional)

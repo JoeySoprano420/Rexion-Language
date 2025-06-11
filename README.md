@@ -42,7 +42,8 @@
 
 ### 🧾 **Example Syntax**
 
-*rexion*
+**rexion**
+
 func greet(name)
 {
   print "Hello, " + name
@@ -54,6 +55,7 @@ greet("Violet")
 Can also be written with NASM-style explicitness:
 
 **rexion**
+
 @func greet(name) -> {
   ::print "Hello, " + name
 }
@@ -64,6 +66,7 @@ Can also be written with NASM-style explicitness:
 Or minimal inline NASM-inspired version:
 
 **rexion**
+
 ::greet(name)::
   >> print "Hello, " + name
 <<

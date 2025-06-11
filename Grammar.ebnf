@@ -1,23 +1,123 @@
-program         = { statement } ;
-statement       = func_decl | func_call | assign_stmt | print_stmt ;
+program             = { top_level_item } ;
 
-func_decl       = "func" identifier "(" [ parameters ] ")" block ;
-parameters      = identifier { "," identifier } ;
-block           = "{" { statement } "}" ;
+top_level_item      = statement | declaration | definition ;
 
-func_call       = identifier "(" [ arguments ] ")" ;
-arguments       = expression { "," expression } ;
+statement           = assign_stmt
+                    | print_stmt
+                    | return_stmt
+                    | control_flow
+                    | func_call
+                    | block ;
 
-assign_stmt     = identifier "=" expression ;
-print_stmt      = "print" expression ;
+declaration         = var_decl | const_decl | struct_decl | enum_decl ;
 
-expression      = term { ("+" | "-") term } ;
-term            = factor { ("*" | "/") factor } ;
-factor          = number | string | identifier | func_call | "(" expression ")" ;
+definition          = func_decl | async_func_decl | event_decl ;
 
-identifier      = letter { letter | digit | "_" } ;
-number          = digit { digit } ;
-string          = "\"" { character } "\"" ;
+assign_stmt         = identifier "=" expression ";" ;
+print_stmt          = "print" expression ";" ;
+return_stmt         = "return" [ expression ] ";" ;
 
-letter          = "A".."Z" | "a".."z" ;
-digit           = "0".."9" ;
+control_flow        = if_stmt | while_stmt | for_stmt | switch_stmt | try_catch_stmt ;
+
+block               = "{" { statement } "}" ;
+
+func_decl           = "func" identifier "(" [ parameters ] ")" block ;
+async_func_decl     = "async" "func" identifier "(" [ parameters ] ")" block ;
+event_decl          = "event" identifier "(" [ parameters ] ")" block ;
+
+parameters          = identifier { "," identifier } ;
+arguments           = expression { "," expression } ;
+
+func_call           = identifier "(" [ arguments ] ")" ;
+
+var_decl            = "let" identifier "=" expression ";" ;
+const_decl          = "const" identifier "=" expression ";" ;
+
+if_stmt             = "if" "(" expression ")" block [ "else" block ] ;
+while_stmt          = "while" "(" expression ")" block ;
+for_stmt            = "for" "(" assign_stmt expression ";" assign_stmt ")" block ;
+switch_stmt         = "switch" "(" expression ")" "{" { "case" expression ":" block } [ "default" ":" block ] "}" ;
+try_catch_stmt      = "try" block "catch" "(" identifier ")" block ;
+
+expression          = logical_or ;
+
+logical_or          = logical_and { "or" logical_and } ;
+logical_and         = equality { "and" equality } ;
+equality            = comparison { ("==" | "!=") comparison } ;
+comparison          = term { ("<" | ">" | "<=" | ">=") term } ;
+term                = factor { ("+" | "-") factor } ;
+factor              = unary { ("*" | "/" | "%") unary } ;
+unary               = [ "!" | "-" ] primary ;
+
+primary             = literal
+                    | identifier
+                    | func_call
+                    | "(" expression ")"
+                    | tuple_expr ;
+
+tuple_expr          = "(" expression { "," expression } ")" ;
+
+literal             = number | float | string | boolean | "null" ;
+
+number              = digit { digit } ;
+float               = digit { digit } "." digit { digit } ;
+string              = "\"" { character } "\"" ;
+boolean             = "true" | "false" ;
+
+identifier          = letter { letter | digit | "_" } ;
+
+letter              = "A".."Z" | "a".."z" ;
+digit               = "0".."9" ;
+
+struct_decl         = "struct" identifier "{" { identifier ":" type ";" } "}" ;
+enum_decl           = "enum" identifier "{" identifier { "," identifier } "}" ;
+
+type                = "int" | "float" | "bool" | "string" | "tuple"
+                    | identifier   // for user-defined structs, enums
+
+// Additional language-specific operations:
+
+memory_ops          = "malloc" "(" expression ")" | "free" "(" identifier ")" ;
+concurrency_ops     = "await" func_call | "async" block | "mutex" block ;
+error_handling      = "throw" expression | "try" block "catch" "(" identifier ")" block ;
+
+modifier_keywords   = "public" | "private" | "static" | "inline" | "extern" ;
+
+directive           = "#" identifier [ expression ]  // e.g., #define, #include, etc.
+macro_expr          = "macro" identifier "{" block "}" ;
+
+graphical_objects   = "shape" identifier "{" { property ":" expression ";" } "}" ;
+sound_objects       = "sound" identifier "{" { property ":" expression ";" } "}" ;
+
+streams             = "stream" identifier "{" block "}" ;
+tree_structure      = "tree" identifier "{" block "}" ;
+
+io_operations       = "read" "(" string ")" | "write" "(" string "," expression ")" ;
+
+module_import       = "import" string ";" | "use" identifier ";" ;
+
+linking             = "link" "(" identifier ")" ";" ;
+
+mutex_block         = "mutex" "{" block "}" ;
+
+heap_set            = "heap" "[" expression "]" "=" expression ";" ;
+heap_get            = "heap" "[" expression "]" ;
+
+assert_stmt         = "assert" "(" expression ")" ";" ;
+
+exceptions          = "throw" expression ";" ;
+
+annotations         = "@" identifier [ "(" expression ")" ] ;
+
+regex_expr          = "/" { character } "/" ;
+
+table_definition    = "table" identifier "{" { row_definition } "}" ;
+row_definition      = "[" expression { "," expression } "]" ;
+
+duration_type       = expression "seconds" | expression "ms" ;
+
+struct_usage        = identifier "." identifier ;
+
+color_literal       = "#" hex_digit hex_digit hex_digit hex_digit hex_digit hex_digit ;
+
+hex_digit           = "0".."9" | "A".."F" | "a".."f" ;

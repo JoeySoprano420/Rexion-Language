@@ -368,3 +368,9 @@ int main(int argc, char* argv[]) {
     // ... normal compilation flow (lexer → parser → ir → asm → exe)
     return 0;
 }
+
+// macro_loader.h
+void load_macros(const char* filename);
+void list_macro_completions();
+void reload_macros_live();
+void export_macro_bundle(const char* path);

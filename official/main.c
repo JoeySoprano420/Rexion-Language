@@ -174,3 +174,152 @@ void batch_process_r4_files(const char* src_dir, const char* out_dir) {
 }
 
 batch_process_r4_files("examples", "build");
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <math.h>
+#include <json-c/json.h>
+#include "token_type.h"
+
+#define MAX_SYMBOLS 128
+#define MAX_MACROS 128
+
+#define USE_PRINTF 0
+#define USE_SYSCALL 1
+
+typedef struct {
+    char name[32];
+    char reg[4];
+    int is_float;
+} Symbol;
+
+typedef struct {
+    char name[64];
+    char expansion[256];
+} Macro;
+
+Symbol symtab[MAX_SYMBOLS];
+int symbol_count = 0;
+Macro macros[MAX_MACROS];
+int macro_count = 0;
+
+const char* allocate_register(const char* varname, int is_float) {
+    for (int i = 0; i < symbol_count; i++) {
+        if (strcmp(symtab[i].name, varname) == 0)
+            return symtab[i].reg;
+    }
+
+    snprintf(symtab[symbol_count].name, sizeof(symtab[symbol_count].name), "%s", varname);
+    snprintf(symtab[symbol_count].reg, sizeof(symtab[symbol_count].reg), "R%d", symbol_count + 1);
+    symtab[symbol_count].is_float = is_float;
+    return symtab[symbol_count++].reg;
+}
+
+void load_macros_from_r4meta(const char* meta_file) {
+    FILE* file = fopen(meta_file, "r");
+    if (!file) {
+        perror("Failed to open r4meta file");
+        return;
+    }
+
+    fseek(file, 0, SEEK_END);
+    long size = ftell(file);
+    rewind(file);
+
+    char* buffer = malloc(size + 1);
+    fread(buffer, 1, size, file);
+    buffer[size] = '\0';
+    fclose(file);
+
+    struct json_object* root = json_tokener_parse(buffer);
+    struct json_object* macro_obj;
+
+    if (json_object_object_get_ex(root, "macros", &macro_obj)) {
+        int len = json_object_array_length(macro_obj);
+        for (int i = 0; i < len && i < MAX_MACROS; i++) {
+            struct json_object* item = json_object_array_get_idx(macro_obj, i);
+            strcpy(macros[i].name, json_object_get_string(json_object_object_get(item, "name")));
+            strcpy(macros[i].expansion, json_object_get_string(json_object_object_get(item, "expansion")));
+            macro_count++;
+        }
+    }
+    free(buffer);
+}
+
+void emit_ir_header() {
+    printf("[IR] section .code\n");
+    printf("[IR] entry main\n");
+}
+
+void emit_ir_operation(const char* op, const char* arg1, const char* arg2) {
+    if (arg2)
+        printf("[IR] %s %s, %s\n", op, arg1, arg2);
+    else
+        printf("[IR] %s %s\n", op, arg1);
+}
+
+void expand_macro(const char* macro_name) {
+    for (int i = 0; i < macro_count; i++) {
+        if (strcmp(macro_name, macros[i].name) == 0) {
+            printf("[MACRO_EXPAND] %s =>\n%s\n", macro_name, macros[i].expansion);
+            char* line = strtok(macros[i].expansion, "\n");
+            while (line) {
+                puts(line);
+                line = strtok(NULL, "\n");
+            }
+            return;
+        }
+    }
+    fprintf(stderr, "[ERROR] Macro '%s' not found\n", macro_name);
+}
+
+void rewrite_r4_to_rexasm(const char* input_path, const char* output_path) {
+    FILE* in = fopen(input_path, "r");
+    FILE* out = fopen(output_path, "w");
+    if (!in || !out) {
+        perror("Failed to open .r4 or .rexasm file");
+        return;
+    }
+
+    char line[256];
+    while (fgets(line, sizeof(line), in)) {
+        if (line[0] == '|' && line[strlen(line) - 2] == '|') {
+            line[strlen(line) - 2] = '\0';
+            const char* macro_name = line + 1;
+            for (int i = 0; i < macro_count; i++) {
+                if (strcmp(macros[i].name, macro_name) == 0) {
+                    fprintf(out, "; Macro: %s\n%s\n", macro_name, macros[i].expansion);
+                    break;
+                }
+            }
+        } else {
+            fputs(line, out);
+        }
+    }
+    fclose(in);
+    fclose(out);
+}
+
+void batch_process_r4_files(const char* src_dir, const char* out_dir) {
+    DIR* dir = opendir(src_dir);
+    if (!dir) {
+        perror("Could not open source directory");
+        return;
+    }
+
+    struct dirent* entry;
+    while ((entry = readdir(dir))) {
+        if (strstr(entry->d_name, ".r4")) {
+            char input_path[256], output_path[256];
+            snprintf(input_path, sizeof(input_path), "%s/%s", src_dir, entry->d_name);
+            snprintf(output_path, sizeof(output_path), "%s/%.*s.rexasm", out_dir,
+                     (int)(strlen(entry->d_name) - 3), entry->d_name);
+            printf("[BATCH] Processing %s -> %s\n", input_path, output_path);
+            rewrite_r4_to_rexasm(input_path, output_path);
+        }
+    }
+    closedir(dir);
+}
+
+

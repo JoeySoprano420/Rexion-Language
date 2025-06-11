@@ -1,0 +1,6 @@
+{
+  "macros": [
+    { "name": "ADDXY", "expansion": "LOAD R1, 5\nLOAD R2, 3\nADD R3, R1\nADD R3, R2\nSTORE result, R3" },
+    { "name": "FLOATSUM", "expansion": "FLOAT_LOAD F1, 3.14\nFLOAT_LOAD F2, 2.71\nFLOAT_ADD F1, F2\nPRINT_FLOAT_SYSCALL F1" }
+  ]
+}

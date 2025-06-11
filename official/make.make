@@ -87,3 +87,6 @@ clean:
 
 codex:
 	python3 generate_codex.py
+
+batch:
+	./rexionc --batch --meta=official/macros.r4meta --src=examples --out=build

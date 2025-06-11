@@ -1,0 +1,56 @@
+import "std/io.r4";
+define message: string;
+message = "Hello, Rexion!";
+print message;
+
+⬇️
+
+[IMPORT] ["std/io.r4"]
+[DEFINE] [IDENT:message] [:] [TYPE:string] [;]
+[IDENT:message] [=] [STRING:"Hello, Rexion!"] [;]
+[PRINT] [IDENT:message] [;]
+
+⬇️
+
+Program
+├── Import("std/io.r4")
+├── Declaration(name="message", type="string")
+├── Assignment(target="message", value=String("Hello, Rexion!"))
+└── Print(identifier="message")
+
+⬇️
+
+LOAD_STR   R1, "Hello, Rexion!"
+STORE      R1, message
+PRINT      message
+HALT
+
+⬇️
+
+section .data
+message db "Hello, Rexion!", 0
+
+section .text
+global _start
+
+_start:
+    mov rsi, message
+    call print_string
+    mov eax, 60
+    xor edi, edi
+    syscall
+
+print_string:
+    mov rdx, 15
+    mov rax, 1
+    mov rdi, 1
+    syscall
+    ret
+
+⬇️
+
+00000000  48 C7 C6 00 00 40 00  E8 0D 00 00 00 B8 3C 00  H....@......<.
+00000010  00 00 31 FF 0F 05 48  C7 C2 0F 00 00 00 48 C7  ..1...H......H.
+00000020  C7 01 00 00 00 B8 01  00 00 00 BF 01 00 00 00  ................
+00000030  0F 05 C3 48 65 6C 6C  6F 2C 20 52 65 78 69 6F  ...Hello, Rexion!
+00000040  6E 21 00                                      n!.

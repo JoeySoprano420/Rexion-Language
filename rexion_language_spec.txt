@@ -1,0 +1,155 @@
+//////////////////////////////////////////////
+// REXION PROGRAMMING LANGUAGE v1.0 (R4)   //
+// INTRINSIC SYSTEM LANGUAGE SPECIFICATION //
+//////////////////////////////////////////////
+
+// 🔰 LANGUAGE OVERVIEW
+// ------------------------------------------------------
+// Name: Rexion
+// Extension: .r4
+// Paradigm: Declarative, Procedural, Instruction-Oriented
+// Execution Model: AOT + JIT Hybrid
+// Final Output: Machine Code (.exe, .bin, .hex)
+// Intermediate Representation: Serialized Flow-NASM-HEX Table
+
+// 🔧 GRAMMAR DEFINITIONS (ANTLR-Compatible EBNF)
+// ------------------------------------------------------
+program     : { statement } EOF;
+statement   : define_stmt | assign_stmt | func_decl | func_call | print_stmt | control_stmt ;
+
+// DECLARATION STRUCTURE
+// Define-through-Declaration Rule
+// Requires all variables and structures to be declared before use.
+define_stmt : 'define' IDENTIFIER ':' type_spec ';';
+type_spec   : 'integer' | 'decimal' | 'string' | 'boolean' | 'list' '<' type_spec '>' ;
+
+assign_stmt : IDENTIFIER '=' expression ';';
+
+func_decl   : 'func' IDENTIFIER '(' [param_list] ')' block;
+param_list  : IDENTIFIER (',' IDENTIFIER)*;
+block       : '{' { statement } '}';
+
+func_call   : IDENTIFIER '(' [arg_list] ')' ';';
+arg_list    : expression (',' expression)*;
+
+print_stmt  : 'print' expression ';';
+
+control_stmt: 'if' condition block ('else' block)?
+            | 'while' condition block
+            | 'return' expression? ';';
+
+condition   : expression comparator expression;
+comparator  : '==' | '!=' | '<' | '<=' | '>' | '>=';
+
+expression  : term (('+'|'-') term)*;
+term        : factor (('*'|'/') factor)*;
+factor      : NUMBER | STRING | IDENTIFIER | func_call | '(' expression ')';
+
+// 🔄 MEMORY & INTRINSIC OPERATIONS
+memory_stmt : 'allocate' IDENTIFIER 'in' ('stack'|'heap') ';'
+            | 'deallocate' IDENTIFIER ';'
+            | 'mutex' IDENTIFIER '{' statement* '}'
+            | 'wipe' IDENTIFIER ';';
+
+// ⏩ FLOW CONTROL INTRINSICS
+flow_stmt   : 'pop' | 'jump' | 'mov' | 'bump' ; // Intrinsic NASM-representation
+
+// 🧠 LOGIC SYSTEMS
+logic_stmt  : 'assert' condition ';'
+            | 'assume' condition ';'
+            | 'diagnose' expression ';'
+            | 'raise' error_level STRING ';';
+
+error_level : 'minor' | 'major' | 'fatal';
+
+// 💾 I/O BUFFER CONTROL
+io_stmt     : 'input' IDENTIFIER ':' type_spec ';'
+            | 'output' expression ';';
+
+// 🧮 DATA TYPES
+NUMBER      : DIGIT+ ('.' DIGIT+)?;
+STRING      : '"' .*? '"';
+IDENTIFIER  : LETTER (LETTER | DIGIT | '_')*;
+
+fragment DIGIT  : [0-9];
+fragment LETTER : [A-Za-z];
+
+// 🛠 REXION STANDARD LIBRARY - STRUCTURE
+// File: std/io.r4
+// File: std/math.r4
+// File: std/sys.r4
+// Includes keywords: define, print, import, allocate, raise, mutex, wipe, log
+
+// 🚀 COMPILER PHASES
+// ------------------------------------------------------
+// 1. Lexer → Tokenize to UEI Form (Universal Executable Instruction)
+// 2. Parser → AST via C-grammar + Flowchart Logic Tree
+// 3. AST Builder → Flowchart-NASM-to-Hex conversion
+// 4. IR Generator → IR Table with contextual cross-referencing
+// 5. AOT Optimizer → Compile .r4 to .bin/.hex/.exe
+// 6. JIT Optimizer → Live optimize branches
+// 7. Runtime Engine → Execute hybrid (AOT+JIT) binary
+
+// 🧩 DEFINE-THROUGH-DECLARATION RULE
+// ------------------------------------------------------
+// All identifiers must be defined with a type before assignment or function use.
+// This allows optimal IR mapping, memory preallocation, and deep error checking.
+// Enforced at compile-time with optional warnings at dev-time.
+
+// ✅ SUPPORTS
+// ✔ Command-driven execution (REPL)
+// ✔ Modular build (functions, imports, macros)
+// ✔ Graph-based logic (Flowchart-like NASM IR)
+// ✔ Real-time optimization
+// ✔ Autonomous memory hygiene
+// ✔ Explicit logic and semantic awareness
+
+// 🛡 FEATURES
+// ------------------------------------------------------
+// → Explicit Semantics
+// → Intrinsic Reference Matching
+// → Real-Memory Threading / Heap / Mutex
+// → Self-declaring Dictionary Engine
+// → Machine-Intuitive NASM Bridging
+// → Deep Pattern Deduction and Smart Error Resolution
+
+// 🔥 EXAMPLE MINIMAL PROGRAM
+// ------------------------------------------------------
+// Hello World in Rexion (.r4)
+
+import "std/io.r4";
+
+define message: string;
+message = "Hello, Rexion!";
+print message;
+
+// 🧠 EXAMPLE MAXIMAL PROGRAM
+// Fibonacci with error handling, mutex, and memory tracking
+
+import "std/io.r4";
+import "std/math.r4";
+
+func fib(n) {
+    if n <= 1 {
+        return n;
+    } else {
+        return fib(n-1) + fib(n-2);
+    }
+}
+
+define limit: integer;
+limit = 10;
+
+mutex computation {
+    define i: integer;
+    i = 0;
+    while i < limit {
+        print fib(i);
+        i = i + 1;
+    }
+}
+
+wipe i;
+deallocate message;
+
+// END SPEC

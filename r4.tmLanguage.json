@@ -1,0 +1,38 @@
+{
+    "name": "Rexion",
+    "fileTypes": [
+        "r4"
+    ],
+    "scopeName": "source.rexion",
+    "patterns": [
+        {
+            "match": "\\b(define|func|print|if|else|return|while|allocate|deallocate|mutex|wipe|assert|raise)\\b",
+            "name": "keyword.control.rexion"
+        },
+        {
+            "match": "\\b(integer|decimal|string|boolean|list)\\b",
+            "name": "storage.type.rexion"
+        },
+        {
+            "match": "\\b(true|false)\\b",
+            "name": "constant.language.boolean.rexion"
+        },
+        {
+            "match": "\".*?\"",
+            "name": "string.quoted.double.rexion"
+        },
+        {
+            "match": "\\b[0-9]+\\b",
+            "name": "constant.numeric.rexion"
+        },
+        {
+            "match": "//.*",
+            "name": "comment.line.double-slash.rexion"
+        },
+        {
+            "match": "\\b(import|output|input)\\b",
+            "name": "support.function.rexion"
+        }
+    ],
+    "uuid": "e1c4f270-89aa-11ee-b9d1-0242ac120002"
+}

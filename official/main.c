@@ -147,3 +147,4 @@ void process_intrinsic_layer(char* src_line) {
     intrinsic_parse_line(src_line);
 }
 
+rewrite_r4_to_rexasm("examples/hello_world.r4", "build/hello_world.rexasm");

@@ -1,0 +1,42 @@
+rexionc_project/
+│
+├── main.c                         # Entry point for compiler CLI
+├── CLI.c                          # Command-line / TUI logic
+├── COMPILER.C                     # Full pipeline: lexer → parser → codegen → emit
+├── lexer.c                        # Lexical analysis
+├── parser.c                       # Syntax parser
+├── ir_codegen.c                   # IR & ASM generator (includes float logic, syscall/printf toggle)
+├── token_type.h                   # Token enums/types (assumed needed by lexer/parser/codegen)
+├── run_main.sh                    # Shell script to run main.c quickly
+├── make.make                      # Main build script (to rename: Makefile)
+├── requirements.txt               # Python or TUI utilities dependencies
+│
+├── hello_world.r4                # Example Rexion source file
+├── r4.ir.json                    # Saved IR output (for inspection/testing)
+├── r4.ast.json                   # Parsed AST snapshot
+│
+├── Order Of Operation.txt        # Compiler planning/narrative (rename suggestion: docs/)
+│
+├── build/                        # ⬅️ OUTPUT DIR (auto-generated)
+│   ├── hello_world.ir
+│   ├── hello_world.asm
+│   ├── hello_world.o
+│   └── hello_world.exe
+│
+├── examples/                     # ⬅️ .r4 demo programs (to grow collection)
+│   ├── hello_world.r4
+│   └── math_demo.r4
+│
+├── official/                     # ⬅️ Formal grammar/spec/tmLanguage
+│   ├── Rexion.g4                 # ANTLR grammar
+│   ├── r4.tmLanguage.json       # VSCode syntax support
+│   └── Order Of Operation.txt   # Moved into docs
+│
+├── tui/                          # ⬅️ Optional TUI viewer / Codex UI
+│   ├── tui_main.c
+│   ├── tui_helpers.c
+│   └── tui_styles.h
+│
+└── docs/                         # ⬅️ Language specs / generated Codex
+    ├── rexion_codex.md
+    └── rexion_codex.pdf

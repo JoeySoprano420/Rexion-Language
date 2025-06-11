@@ -1,0 +1,4 @@
+import "std/io.r4";
+define message: string;
+message = "Hello, Rexion!";
+print message;

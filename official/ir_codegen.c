@@ -1381,3 +1381,15 @@ void generate_intermediate_code() {
 }
 
 // Keep generate_asm_from_ir() as-is from prior version
+
+#include <json-c/json.h>
+#define MAX_MACROS 128
+
+typedef struct {
+    char name[64];
+    char expansion[256];
+} Macro;
+
+Macro macros[MAX_MACROS];
+int macro_count = 0;
+

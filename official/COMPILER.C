@@ -4,6 +4,34 @@
 #include <unistd.h>
 
 void compile_to_ir() {
+    // --- Deep Ultra Object Oriented Programming & Ultra Inheritance Example ---
+    printf("[IR] CLASS Animal\n");
+    printf("[IR]   FIELD public name : String\n");
+    printf("[IR]   METHOD public speak() { PRINT \"...\" }\n");
+    printf("[IR] ENDCLASS\n");
+
+    // Ultra inheritance: multiple base classes using 'inherit'
+    printf("[IR] CLASS Dog INHERIT Animal, Pet\n");
+    printf("[IR]   FIELD private breed : String\n");
+    printf("[IR]   METHOD public speak() { PRINT \"Woof!\" }\n");
+    printf("[IR]   METHOD public fetch() { PRINT \"Fetching!\" }\n");
+    printf("[IR] ENDCLASS\n");
+
+    // Deep eval: evaluating an expression at runtime
+    printf("[IR] EVAL (1 + 2 * 3)\n");
+    printf("[IR] STORE <eval_result>, result\n");
+    printf("[IR] PRINT result\n");
+
+    // OOP: object instantiation and method calls
+    printf("[IR] NEW Dog AS myDog\n");
+    printf("[IR] CALL myDog.speak()\n");
+    printf("[IR] CALL myDog.fetch()\n");
+
+    // OOP: super and this usage
+    printf("[IR] CALL super.speak()\n");
+    printf("[IR] CALL this.speak()\n");
+
+    // Existing IR for demonstration
     printf("[IR] LOAD_STR R1, \"Hello, Rexion!\"\n");
     printf("[IR] STORE R1, message\n");
     printf("[IR] PRINT message\n");
@@ -57,10 +85,8 @@ void execute_jit() {
 }
 
 int main() {
-    printf("🔧 REXION AOT+JIT COMPILER
-");
-    printf("➡️  Compiling hello.r4
-");
+    printf("🔧 REXION AOT+JIT COMPILER\n");
+    printf("➡️  Compiling hello.r4\n");
 
     compile_to_ir();
     optimize_ir();

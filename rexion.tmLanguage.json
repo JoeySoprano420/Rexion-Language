@@ -1,0 +1,11 @@
+{
+  "name": "rexion",
+  "scopeName": "source.rex",
+  "patterns": [
+    { "match": "\\bfunc\\b", "name": "keyword.control.rexion" },
+    { "match": "\\bprint\\b", "name": "keyword.print.rexion" },
+    { "match": "\\b[a-zA-Z_][a-zA-Z0-9_]*\\b", "name": "variable.other.rexion" },
+    { "match": "\".*?\"", "name": "string.quoted.double.rexion" }
+  ],
+  "fileTypes": ["rex"]
+}

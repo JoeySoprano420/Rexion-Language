@@ -52,3 +52,52 @@ def generate_pdf():
 if __name__ == "__main__":
     generate_markdown()
     generate_pdf()
+
+# generate_codex.py
+from pathlib import Path
+import re
+from fpdf import FPDF
+
+source_files = ["lexer.c", "parser.c", "ir_codegen.c", "rexionc_main.c"]
+md_output_path = Path("rexion_codex.md")
+pdf_output_path = Path("rexion_codex.pdf")
+
+def extract_doc_lines(file_path):
+    doc_lines = []
+    with open(file_path, "r") as f:
+        for line in f:
+            if "// DOC:" in line:
+                content = line.split("// DOC:")[1].strip()
+                doc_lines.append((file_path, content))
+    return doc_lines
+
+all_doc_lines = []
+for file in source_files:
+    all_doc_lines.extend(extract_doc_lines(file))
+
+with open(md_output_path, "w") as md:
+    md.write("# Rexion Language Codex (Auto-Generated)\n\n")
+    current_file = None
+    for file, line in all_doc_lines:
+        if file != current_file:
+            md.write(f"\n## {file}\n\n")
+            current_file = file
+        md.write(f"- {line}\n")
+
+pdf = FPDF()
+pdf.set_auto_page_break(auto=True, margin=15)
+pdf.add_page()
+pdf.set_font("Arial", size=12)
+pdf.set_title("Rexion Language Codex")
+
+current_file = None
+for file, line in all_doc_lines:
+    if file != current_file:
+        pdf.set_font("Arial", 'B', 14)
+        pdf.cell(200, 10, txt=f"{file}", ln=True, align="L")
+        pdf.set_font("Arial", size=12)
+        current_file = file
+    pdf.multi_cell(0, 10, txt=f"- {line}")
+
+pdf.output(str(pdf_output_path))
+print("✅ Codex generated: rexion_codex.md and rexion_codex.pdf")

@@ -90,3 +90,6 @@ codex:
 
 batch:
 	./rexionc --batch --meta=official/macros.r4meta --src=examples --out=build
+
+batch:
+	./rexionc --batch --meta=official/macros.r4meta --src=examples --out=build

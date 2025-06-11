@@ -644,8 +644,6 @@ class RexionFullVM:
 # vm.execute()
 # vm.show_state()
 
-import struct
-
 INSTR = {
     "MOV":   0x10,   # MOV reg, value
     "ADD":   0x11,   # ADD reg, a, b

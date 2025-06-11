@@ -1256,3 +1256,26 @@ int main(int argc, char* argv[]) {
     free(buffer);
     return 0;
 }
+void rewrite_r4_to_rexasm(const char* input, const char* output) {
+    FILE* fin = fopen(input, "r");
+    FILE* fout = fopen(output, "w");
+
+    if (!fin || !fout) {
+        perror("Failed file I/O");
+        exit(1);
+    }
+
+    char line[256];
+    while (fgets(line, sizeof(line), fin)) {
+        char macro[64];
+        if (sscanf(line, "|%[^|]|", macro) == 1) {
+            expand_macro_to_ir(macro, fout);
+        } else {
+            fprintf(fout, "%s", line); // passthrough normal lines
+        }
+    }
+
+    fclose(fin); fclose(fout);
+    printf("[REXASM] Generated: %s\n", output);
+}
+

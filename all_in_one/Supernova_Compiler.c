@@ -5487,3 +5487,27 @@ void generate_arm64_asm(IRNode* ir);
 void generate_riscv_asm(IRNode* ir);
 
 const char* allocate_register(const char* varname, int is_float, TargetArch* arch);
+
+TargetArch* select_arch(const char* target_name);
+
+void generate_asm(IRNode* ir, const char* target_name) {
+    TargetArch* arch = select_arch(target_name);
+    if (!arch) {
+        fprintf(stderr, "Error: Unsupported target architecture '%s'\n", target_name);
+        return;
+    }
+    switch (arch->type) {
+        case ARCH_X86_64:
+            generate_x86_64_asm(ir);
+            break;
+        case ARCH_ARM64:
+            generate_arm64_asm(ir);
+            break;
+        case ARCH_RISCV:
+            generate_riscv_asm(ir);
+            break;
+        default:
+            fprintf(stderr, "Error: Unknown architecture type\n");
+    }
+}
+

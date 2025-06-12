@@ -10,3 +10,11 @@
     }
   ]
 }
+
+{
+  "ADD": {
+    "x86_64": "ADD RAX, RBX",
+    "arm64": "ADD X0, X1",
+    "riscv": "ADD A0, A1"
+  }
+}

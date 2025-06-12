@@ -149,3 +149,163 @@ int check_collision(Hitbox a, Hitbox b) {
             a.y < b.y + b.height &&
             a.y + a.height > b.y);
 }
+
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
+#include <stdlib.h>
+
+#define INLINE __attribute__((always_inline)) inline
+#define FORCE_ALIGN __attribute__((aligned(64)))
+#define likely(x)   __builtin_expect((x),1)
+#define unlikely(x) __builtin_expect((x),0)
+#define HASH_SEED 0xA5A5A5A5
+
+// Secure constant-time memory compare
+INLINE int secure_memcmp(const void* a, const void* b, size_t len) {
+    const uint8_t* p1 = (const uint8_t*)a;
+    const uint8_t* p2 = (const uint8_t*)b;
+    uint8_t result = 0;
+    for (size_t i = 0; i < len; ++i) {
+        result |= p1[i] ^ p2[i];
+    }
+    return result; // 0 = equal, non-zero = different
+}
+
+// Fast + secure compile-time strength hash
+INLINE uint32_t fast_secure_hash(const char* input, size_t len) {
+    uint32_t hash = HASH_SEED;
+    for (size_t i = 0; i < len; ++i) {
+        hash ^= (uint32_t)(input[i]);
+        hash *= 0x45d9f3b;
+        hash ^= (hash >> 13);
+    }
+    return hash;
+}
+
+// Unrolled copy with size check
+void safe_copy(char* dest, const char* src, size_t max_len) {
+    if (unlikely(!dest || !src || max_len == 0)) return;
+    size_t i = 0;
+    for (; i + 4 <= max_len - 1; i += 4) {
+        dest[i] = src[i];
+        dest[i+1] = src[i+1];
+        dest[i+2] = src[i+2];
+        dest[i+3] = src[i+3];
+    }
+    for (; i < max_len - 1; ++i) {
+        dest[i] = src[i];
+    }
+    dest[i] = '\0';
+}
+
+// Test entry (simulate login or secure compare)
+int main() {
+    FORCE_ALIGN char user_input[128];
+    FORCE_ALIGN char stored_secret[] = "VACU-SUPREME-CODEX-KEY";
+
+    printf("Enter secure code: ");
+    if (fgets(user_input, sizeof(user_input), stdin) == NULL) {
+        fprintf(stderr, "Input error\n");
+        return EXIT_FAILURE;
+    }
+
+    // Remove newline safely
+    user_input[strcspn(user_input, "\n")] = '\0';
+
+    size_t input_len = strnlen(user_input, sizeof(user_input));
+    size_t secret_len = strlen(stored_secret);
+
+    // Constant-time comparison
+    if (input_len == secret_len &&
+        secure_memcmp(user_input, stored_secret, secret_len) == 0) {
+        puts("Access Granted.");
+    } else {
+        puts("Access Denied.");
+    }
+
+    // Output fast hash (for logging or secure trace)
+    uint32_t h = fast_secure_hash(user_input, input_len);
+    printf("Secure Hash: 0x%X\n", h);
+
+    return EXIT_SUCCESS;
+}
+
+#include <cuda_runtime.h>
+#include <device_launch_parameters.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
+#include <stdlib.h>
+
+#define MAX_INPUTS 8
+#define HASH_SEED 0xA5A5A5A5
+
+__device__ uint32_t device_hash(const char* input, size_t len) {
+    uint32_t hash = HASH_SEED;
+    for (size_t i = 0; i < len; ++i) {
+        hash ^= (uint32_t)(input[i]);
+        hash *= 0x45d9f3b;
+        hash ^= (hash >> 13);
+    }
+    return hash;
+}
+
+__global__ void hash_kernel(const char* input_data, const size_t* input_lengths, uint32_t* output_hashes, int count, int stride) {
+    int idx = threadIdx.x + blockIdx.x * blockDim.x;
+    if (idx < count) {
+        const char* str_ptr = input_data + (idx * stride);
+        output_hashes[idx] = device_hash(str_ptr, input_lengths[idx]);
+    }
+}
+
+int main() {
+    const char* host_inputs[MAX_INPUTS] = {
+        "alpha", "beta", "gamma", "delta",
+        "epsilon", "zeta", "eta", "theta"
+    };
+
+    const int stride = 32;
+    char* h_input_data = (char*)calloc(MAX_INPUTS * stride, sizeof(char));
+    size_t h_input_lengths[MAX_INPUTS];
+    uint32_t h_output_hashes[MAX_INPUTS] = {0};
+
+    for (int i = 0; i < MAX_INPUTS; ++i) {
+        strncpy(&h_input_data[i * stride], host_inputs[i], stride - 1);
+        h_input_lengths[i] = strlen(host_inputs[i]);
+    }
+
+    char* d_input_data;
+    size_t* d_input_lengths;
+    uint32_t* d_output_hashes;
+
+    cudaMalloc((void**)&d_input_data, MAX_INPUTS * stride);
+    cudaMalloc((void**)&d_input_lengths, MAX_INPUTS * sizeof(size_t));
+    cudaMalloc((void**)&d_output_hashes, MAX_INPUTS * sizeof(uint32_t));
+
+    cudaMemcpy(d_input_data, h_input_data, MAX_INPUTS * stride, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_input_lengths, h_input_lengths, MAX_INPUTS * sizeof(size_t), cudaMemcpyHostToDevice);
+
+    hash_kernel<<<1, MAX_INPUTS>>>(d_input_data, d_input_lengths, d_output_hashes, MAX_INPUTS, stride);
+    cudaDeviceSynchronize();
+
+    cudaMemcpy(h_output_hashes, d_output_hashes, MAX_INPUTS * sizeof(uint32_t), cudaMemcpyDeviceToHost);
+
+    FILE* f = fopen("cuda_hash_results.txt", "w");
+    if (!f) {
+        perror("File open failed");
+        return 1;
+    }
+
+    for (int i = 0; i < MAX_INPUTS; ++i) {
+        fprintf(f, "Input: %s => Hash: 0x%X\n", &h_input_data[i * stride], h_output_hashes[i]);
+    }
+
+    fclose(f);
+    cudaFree(d_input_data);
+    cudaFree(d_input_lengths);
+    cudaFree(d_output_hashes);
+    free(h_input_data);
+
+    return 0;
+}

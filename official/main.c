@@ -388,4 +388,5 @@ else if (strcmp(argv[i], "--rexasm") == 0) {
     }
 }
 
+TargetArch* select_arch(const char* target_name);
 

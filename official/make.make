@@ -121,3 +121,58 @@ R4META=official/macros.r4meta
 	ld out.o -o $@
 
 all: examples/hello_world.exe
+
+# REXION Compiler Build Makefile
+
+# Compiler and Linker
+CC=gcc
+LD=ld
+
+# Flags
+CFLAGS=-Wall -Wextra -O2
+LDFLAGS=
+
+# Source Files
+SRC=main.c lexer.c parser.c ir_codegen.c rexionc_main.c peephole_optimizer.c watch_macros.c
+OBJ=$(SRC:.c=.o)
+
+# Output Files
+BIN=rexionc
+
+# Example Files
+EXAMPLES_DIR=examples
+EXAMPLES=$(wildcard $(EXAMPLES_DIR)/*.r4)
+
+# Build Rules
+all: $(BIN)
+
+$(BIN): $(OBJ)
+	$(CC) $(OBJ) -o $(BIN) $(LDFLAGS)
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+run: $(BIN)
+	./$(BIN) --input $(EXAMPLES_DIR)/hello_world.r4 --meta --debug-full
+
+# Macro Export Command
+export-macros:
+	python3 tools/export_macros.py --output macro_bundle.zip
+
+# Optimize IR manually
+optimize:
+	./$(BIN) --input $(EXAMPLES_DIR)/hello_world.r4 --optimize --emit-ir optimized_output.ir
+
+# First time onboarding
+first:
+	bash onboard.sh
+
+# Clean
+clean:
+	rm -f *.o $(BIN) rexion.asm rexion.exe *.ir
+
+# Watch Macro File
+watch:
+	./watch_macros &
+
+.PHONY: all clean run first watch export-macros optimize

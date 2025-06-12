@@ -5482,3 +5482,8 @@ int main(int argc, char** argv) {
     return 0;
 }
 
+void generate_x86_64_asm(IRNode* ir);
+void generate_arm64_asm(IRNode* ir);
+void generate_riscv_asm(IRNode* ir);
+
+const char* allocate_register(const char* varname, int is_float, TargetArch* arch);
